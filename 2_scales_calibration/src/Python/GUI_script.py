@@ -53,7 +53,7 @@ def display_numbers(scale_num):
         number = format(random.uniform(0, 10) if scale_num == 1 else random.uniform(10, 20), ".2f")
         scale_values.append(number)
         scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
-        if len(scale_values) > 10:
+        if len(scale_values) > 40:
             scale_values.pop(0)
             scale_timestamps.pop(0)
         scale_values_text = scales[scale_num]["text"]
@@ -73,6 +73,15 @@ def write_to_file(scale_num, line):
     with open(filename, "a") as file:
         file.write(line)  # Append the latest line to the file
 
+# Function to clear the values and timestamps for a scale
+def clear_values(scale_num):
+    scale_values = scales[scale_num]["values"]
+    scale_timestamps = scales[scale_num]["timestamps"]
+    scale_values.clear()
+    scale_timestamps.clear()
+    scale_values_text = scales[scale_num]["text"]
+    scale_values_text.delete(1.0, tk.END)
+
 # Create the checkboxes and value displays for each scale
 for scale_num in scales:
     scale_values = scales[scale_num]["values"]
@@ -88,7 +97,7 @@ for scale_num in scales:
     scale_frame = tk.Frame(window, width=display_frame_width)
     scale_frame.grid(row=1, column=scale_num-1, padx=space_between_frames, pady=10)
 
-    scale_values_text = tk.Text(scale_frame, relief="solid", width=int(display_frame_width/8), height=10)
+    scale_values_text = tk.Text(scale_frame, relief="solid", width=int(display_frame_width/8), height=40)
     scale_values_text.pack()
 
     scales[scale_num]["text"] = scale_values_text
@@ -96,6 +105,10 @@ for scale_num in scales:
     scale_checkbox_var.set(scale_is_displaying)
 
     display_numbers(scale_num)
+
+    clear_button = tk.Button(scale_frame, text="Clear", command=lambda num=scale_num: clear_values(num))
+    clear_button.pack()
+
 
 ## Create the "Settings" section
 settings_frame = tk.Frame(window)
