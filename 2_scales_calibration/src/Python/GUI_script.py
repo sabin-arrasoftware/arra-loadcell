@@ -47,41 +47,13 @@ def toggle_display(scale_num):
         display_numbers(scale_num)
 
 
-# Function to display the numbers for a scale
-def display_numbers(scale_num):
-    if scales[scale_num]["is_displaying"]:
-        scale_values = scales[scale_num]["values"]
-        scale_timestamps = scales[scale_num]["timestamps"]
-        scale_checkbox_var = scales[scale_num]["checkbox"]
-        number = format(random.uniform(0, 10) if scale_num == 1 else random.uniform(10, 20), ".2f")
-        scale_values.append(number)
-        scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
-        if len(scale_values) > 40:
-            scale_values.pop(0)
-            scale_timestamps.pop(0)
-        scale_values_text = scales[scale_num]["text"]
-        scale_values_text.delete(1.0, tk.END)
-        for value, timestamp in zip(scale_values, scale_timestamps):
-            line = f"{timestamp}: {value}\n"
-            scale_values_text.insert(tk.END, line)
-        write_to_file(scale_num, line)
-        global interval
-        window.after(interval, lambda: display_numbers(scale_num))
-
 # # Function to display the numbers for a scale
 # def display_numbers(scale_num):
 #     if scales[scale_num]["is_displaying"]:
 #         scale_values = scales[scale_num]["values"]
 #         scale_timestamps = scales[scale_num]["timestamps"]
 #         scale_checkbox_var = scales[scale_num]["checkbox"]
-        
-#         # Get the values from the read_serial_values function
-#         values = read_serial_values()
-#         if scale_num == 1:
-#             number = values[0]
-#         else:
-#             number = values[1]
-
+#         number = format(random.uniform(0, 10) if scale_num == 1 else random.uniform(10, 20), ".2f")
 #         scale_values.append(number)
 #         scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
 #         if len(scale_values) > 40:
@@ -95,6 +67,34 @@ def display_numbers(scale_num):
 #         write_to_file(scale_num, line)
 #         global interval
 #         window.after(interval, lambda: display_numbers(scale_num))
+
+# Function to display the numbers for a scale
+def display_numbers(scale_num):
+    if scales[scale_num]["is_displaying"]:
+        scale_values = scales[scale_num]["values"]
+        scale_timestamps = scales[scale_num]["timestamps"]
+        scale_checkbox_var = scales[scale_num]["checkbox"]
+        
+        # Get the values from the read_serial_values function
+        values = read_serial_values()
+        if scale_num == 1:
+            number = values[0]
+        else:
+            number = values[1]
+
+        scale_values.append(number)
+        scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
+        if len(scale_values) > 40:
+            scale_values.pop(0)
+            scale_timestamps.pop(0)
+        scale_values_text = scales[scale_num]["text"]
+        scale_values_text.delete(1.0, tk.END)
+        for value, timestamp in zip(scale_values, scale_timestamps):
+            line = f"{timestamp}: {value}\n"
+            scale_values_text.insert(tk.END, line)
+        write_to_file(scale_num, line)
+        global interval
+        window.after(interval, lambda: display_numbers(scale_num))
 
 
 # Function to write the last line to a file for a scale
@@ -217,15 +217,15 @@ for scale_num in scales:
 current_display_tab.grid_columnconfigure(0, weight=1)
 current_display_tab.grid_columnconfigure(1, weight=1)
 
-# # Open the serial port
-# ser = serial.Serial("/dev/ttyUSB0", 9600)  # The appropriate serial port via USB cable
+# Open the serial port
+ser = serial.Serial("/dev/ttyUSB0", 9600)  # The appropriate serial port via USB cable
 
-# # Function to read values from the serial port and update the textboxes
-# def read_serial_values():
-#     if ser.in_waiting > 0:
-#         line = ser.readline().decode().strip()
-#         values = line.split("  ")
-#         return values
+# Function to read values from the serial port and update the textboxes
+def read_serial_values():
+    if ser.in_waiting > 0:
+        line = ser.readline().decode().strip()
+        values = line.split("  ")
+        return values
         
         # for scale_num, value in enumerate(values, start=1):
         #     if scale_values_text[scale_num - 1].winfo_ismapped():
