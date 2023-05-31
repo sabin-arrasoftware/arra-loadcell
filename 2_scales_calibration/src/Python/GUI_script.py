@@ -4,6 +4,25 @@ from tkinter import ttk
 from datetime import datetime
 import serial
 
+# Global variables
+calibration_in_progress = False
+calibration_factors_received = False
+calibration_factors = [1.0, 1.0]  # Initialize with default values
+
+# Function to send a calibration command to the Arduino
+def send_calibration_command():
+    global calibration_in_progress
+    calibration_in_progress = True
+    ser.write(b'CALIBRATE\n')
+
+# Function to update the calibration factors in the GUI and send them to the Arduino
+def update_calibration_factors():
+    global calibration_factors_received
+    calibration_factors_received = False
+    calibration_factors[0] = float(calibration_entries[1].get())
+    calibration_factors[1] = float(calibration_entries[2].get())
+    ser.write(f'CALIBRATION_FACTORS:{calibration_factors[0]},{calibration_factors[1]}\n'.encode())
+
 # Create the Tkinter window
 window = tk.Tk()
 window.title("Scale Display")
@@ -44,57 +63,47 @@ def toggle_display(scale_num):
         filename = f"scale{scale_num}_values.txt"
         with open(filename, "a") as file:
             file.write("-----\n")
-        display_numbers(scale_num)
 
-
-# # Function to display the numbers for a scale
-# def display_numbers(scale_num):
-#     if scales[scale_num]["is_displaying"]:
-#         scale_values = scales[scale_num]["values"]
-#         scale_timestamps = scales[scale_num]["timestamps"]
-#         scale_checkbox_var = scales[scale_num]["checkbox"]
-#         number = format(random.uniform(0, 10) if scale_num == 1 else random.uniform(10, 20), ".2f")
-#         scale_values.append(number)
-#         scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
-#         if len(scale_values) > 40:
-#             scale_values.pop(0)
-#             scale_timestamps.pop(0)
-#         scale_values_text = scales[scale_num]["text"]
-#         scale_values_text.delete(1.0, tk.END)
-#         for value, timestamp in zip(scale_values, scale_timestamps):
-#             line = f"{timestamp}: {value}\n"
-#             scale_values_text.insert(tk.END, line)
-#         write_to_file(scale_num, line)
-#         global interval
-#         window.after(interval, lambda: display_numbers(scale_num))
 
 # Function to display the numbers for a scale
 def display_numbers(scale_num):
+    global calibration_in_progress
+    global calibration_factors_received
+    global calibration_factors
+
     if scales[scale_num]["is_displaying"]:
         scale_values = scales[scale_num]["values"]
         scale_timestamps = scales[scale_num]["timestamps"]
         scale_checkbox_var = scales[scale_num]["checkbox"]
-        
-        # Get the values from the read_serial_values function
-        values = read_serial_values()
-        if scale_num == 1:
-            number = values[0]
-        else:
-            number = values[1]
 
-        scale_values.append(number)
-        scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
-        if len(scale_values) > 40:
-            scale_values.pop(0)
-            scale_timestamps.pop(0)
-        scale_values_text = scales[scale_num]["text"]
-        scale_values_text.delete(1.0, tk.END)
-        for value, timestamp in zip(scale_values, scale_timestamps):
-            line = f"{timestamp}: {value}\n"
-            scale_values_text.insert(tk.END, line)
-        write_to_file(scale_num, line)
-        global interval
-        window.after(interval, lambda: display_numbers(scale_num))
+        values = read_serial_values()
+        if values:
+            if calibration_in_progress and not calibration_factors_received:
+                if values[0].startswith("CAL_FACTOR:"):
+                    print("values: ", values)
+                    calibration_factors[scale_num - 1] = float(values[0].split(":")[1].strip())
+                    print("cf[", scale_num - 1, "]: ", calibration_factors[scale_num - 1])
+                    calibration_factors_received = True
+                    calibration_in_progress = False
+            else:
+                print("values:", values)
+                number = float(values[scale_num - 1].split(":")[1].strip()) * calibration_factors[scale_num - 1]
+                print("number:", number)
+
+                scale_values.append(number)
+                scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
+                if len(scale_values) > 40:
+                    scale_values.pop(0)
+                    scale_timestamps.pop(0)
+                scale_values_text = scales[scale_num]["text"]
+                scale_values_text.delete(1.0, tk.END)
+                for value, timestamp in zip(scale_values, scale_timestamps):
+                    line = f"{timestamp}: {value}\n"
+                    scale_values_text.insert(tk.END, line)
+                write_to_file(scale_num, line)
+
+    global interval
+    window.after(interval, lambda: display_numbers(scale_num))
 
 
 # Function to write the last line to a file for a scale
@@ -186,7 +195,6 @@ def update_time_interval():
             global interval
             interval = new_interval
 
-
 # Create the "Calibration" tab
 calibration_tab = ttk.Frame(tab_control)
 tab_control.add(calibration_tab, text="Calibration")
@@ -198,24 +206,34 @@ for scale_num in scales:
     scale_frame = tk.Frame(calibration_tab)
     scale_frame.pack(padx=space_between_frames, pady=10)
 
-    scale_label = tk.Label(scale_frame, text=f"Scale {scale_num}:")
+    scale_label = tk.Label(scale_frame, text=f"Scale {scale_num} Calibration Factor:")
     scale_label.pack()
 
     calibration_entry = tk.Entry(scale_frame, width=10)
     calibration_entry.insert(tk.END, scales[scale_num]["calibration_factor"])
     calibration_entry.pack()
 
-    update_button = tk.Button(
-        scale_frame, text="Update", command=lambda num=scale_num: update_calibration_factor(num)
-    )
-    update_button.pack()
+    # update_button = tk.Button(
+    #     scale_frame, text="Update", command=lambda num=scale_num: update_calibration_factor(num)
+    # )
+    # update_button.pack()
 
     calibration_entries[scale_num] = calibration_entry
 
+update_button = tk.Button(
+    calibration_tab, text="Update Calibration Factors", command=update_calibration_factors
+)
+update_button.pack()
+
+calibration_button = tk.Button(
+    calibration_tab, text="Start Calibration", command=send_calibration_command
+)
+calibration_button.pack()
 
 # Configure the grid layout to adjust the column widths
 current_display_tab.grid_columnconfigure(0, weight=1)
 current_display_tab.grid_columnconfigure(1, weight=1)
+
 
 # Open the serial port
 ser = serial.Serial("/dev/ttyUSB0", 9600)  # The appropriate serial port via USB cable
@@ -226,16 +244,7 @@ def read_serial_values():
         line = ser.readline().decode().strip()
         values = line.split("  ")
         return values
-        
-        # for scale_num, value in enumerate(values, start=1):
-        #     if scale_values_text[scale_num - 1].winfo_ismapped():
-        #         scale_values_text[scale_num - 1].insert(tk.END, value + "\n")
-        #         scale_values_text[scale_num - 1].see(tk.END)  # Scroll to the end
-            
-    # window.after(100, read_serial_values)  # Schedule the next read after 100ms
-
-# Start reading values from the serial port
-# read_serial_values()
+    return None
 
 # Run the Tkinter event loop
 window.mainloop()
