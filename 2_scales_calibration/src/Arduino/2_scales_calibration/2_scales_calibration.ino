@@ -16,7 +16,7 @@
        LoadCell.refreshDataSet();
        float newCalibrationValue = LoadCell.getNewCalibration(known_mass);
 */
-
+/*
 #include <HX711_ADC.h>
 #if defined(ESP8266)|| defined(ESP32) || defined(AVR)
 #include <EEPROM.h>
@@ -303,6 +303,131 @@ void changeSavedCalFactor(HX711_ADC& LoadCell, int calVal_eepromAdress) {
   Serial.println("End change calibration value");
   Serial.println("***");
 }
+*/
 
+#include <Wire.h>
+#include <HX711.h>
+
+// Define the HX711 scale objects
+HX711 scale1;
+HX711 scale2;
+
+// Pins:
+const int HX711_dout1 = 15; // MCU > HX711 dout pin for first load cell
+const int HX711_sck1 = 14; // MCU > HX711 sck pin for first load cell
+const int HX711_dout2 = 17; // MCU > HX711 dout pin for second load cell
+const int HX711_sck2 = 16; // MCU > HX711 sck pin for second load cell
+
+bool calibrationInProgress = false;
+float calibrationMasses[2] = {0.0, 0.0};
+float calibrationFactors[2] = {1.0, 1.0};
+
+void setup()
+{
+  Serial.begin(9600);
+
+  // Initialize the HX711 scales
+  scale1.begin(HX711_dout1, HX711_sck1);
+  scale2.begin(HX711_dout2, HX711_sck2);
+
+  scale1.tare();
+  scale2.tare();
+}
+
+void loop()
+{
+  if (Serial.available() > 0)
+  {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+
+    if (command.startsWith("CALIBRATE:"))
+    {
+      calibrationInProgress = true;
+      
+      // Parse the calibration masses from the command
+      command.remove(0, strlen("CALIBRATE:"));
+      int separatorIndex = command.indexOf(' ');
+      if (separatorIndex != -1)
+      {
+        String mass1String = command.substring(0, separatorIndex);
+        String mass2String = command.substring(separatorIndex + 1);
+        
+        // Convert the masses to floating-point values
+        float mass1 = mass1String.toFloat();
+        float mass2 = mass2String.toFloat();
+        
+        // Perform calibration process for each scale
+        float calibrationFactor1 = performCalibrationScale1(mass1);
+        float calibrationFactor2 = performCalibrationScale2(mass2);
+
+        // Update the calibration factors
+        calibrationFactors[0] = calibrationFactor1;
+        calibrationFactors[1] = calibrationFactor2;
+
+        // Send the calibration factors back to the Python code
+        Serial.print("CAL_FACTOR:");
+        Serial.print(calibrationFactor1);
+        Serial.print(" ");
+        Serial.print(calibrationFactor2);
+        Serial.println();
+      }
+      
+      calibrationInProgress = false;
+    }
+    else if (command.equals("CALIBRATION_FACTORS"))
+    {
+      // Send the calibration factors back to the Python code
+      Serial.print("CAL_FACTOR:");
+      Serial.print(calibrationFactors[0]);
+      Serial.print(" ");
+      Serial.print(calibrationFactors[1]);
+      Serial.println();
+    }
+  }
+
+  if (!calibrationInProgress)
+  {
+    float scale1_weight = scale1.get_units();
+    float scale2_weight = scale2.get_units();
+
+    Serial.print("Scale 1: ");
+    Serial.print(scale1_weight);
+    Serial.print("  Scale 2: ");
+    Serial.println(scale2_weight);
+
+    delay(500);
+  }
+}
+
+float performCalibrationScale1(float mass1)
+{
+  // Calibration logic for scale 1
+  
+  float calibrationFactor1 = mass1 / scale1.get_units();
+  
+  // Apply the calibration factor to the scale
+  scale1.set_scale(calibrationFactor1);
+
+  // Tare the scale
+  scale1.tare();
+
+  return calibrationFactor1;
+}
+
+float performCalibrationScale2(float mass2)
+{
+  // Calibration logic for scale 2
+  
+  float calibrationFactor2 = mass2 / scale2.get_units();
+  
+  // Apply the calibration factor to the scale
+  scale2.set_scale(calibrationFactor2);
+
+  // Tare the scale
+  scale2.tare();
+
+  return calibrationFactor2;
+}
 
 

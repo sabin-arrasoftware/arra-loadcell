@@ -8,20 +8,13 @@ import serial
 calibration_in_progress = False
 calibration_factors_received = False
 calibration_factors = [1.0, 1.0]  # Initialize with default values
+calibration_masses = [6.1, 6.1]  # Initialize with default values
 
-# Function to send a calibration command to the Arduino
 def send_calibration_command():
     global calibration_in_progress
     calibration_in_progress = True
-    ser.write(b'CALIBRATE\n')
-
-# Function to update the calibration factors in the GUI and send them to the Arduino
-def update_calibration_factors():
-    global calibration_factors_received
-    calibration_factors_received = False
-    calibration_factors[0] = float(calibration_entries[1].get())
-    calibration_factors[1] = float(calibration_entries[2].get())
-    ser.write(f'CALIBRATION_FACTORS:{calibration_factors[0]},{calibration_factors[1]}\n'.encode())
+    print(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n')
+    ser.write(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n'.encode())
 
 # Create the Tkinter window
 window = tk.Tk()
@@ -64,7 +57,6 @@ def toggle_display(scale_num):
         with open(filename, "a") as file:
             file.write("-----\n")
 
-
 # Function to display the numbers for a scale
 def display_numbers(scale_num):
     global calibration_in_progress
@@ -78,9 +70,11 @@ def display_numbers(scale_num):
 
         values = read_serial_values()
         if values:
+            print("cip: ", calibration_in_progress)
+            print("cfr: ", calibration_factors_received)
             if calibration_in_progress and not calibration_factors_received:
+                print("values: ", values)
                 if values[0].startswith("CAL_FACTOR:"):
-                    print("values: ", values)
                     calibration_factors[scale_num - 1] = float(values[0].split(":")[1].strip())
                     print("cf[", scale_num - 1, "]: ", calibration_factors[scale_num - 1])
                     calibration_factors_received = True
@@ -105,7 +99,6 @@ def display_numbers(scale_num):
     global interval
     window.after(interval, lambda: display_numbers(scale_num))
 
-
 # Function to write the last line to a file for a scale
 def write_to_file(scale_num, line):
     filename = f"scale{scale_num}_values.txt"
@@ -121,16 +114,6 @@ def clear_values(scale_num):
     scale_timestamps.clear()
     scale_values_text = scales[scale_num]["text"]
     scale_values_text.delete(1.0, tk.END)
-
-
-# Function to update the calibration factor for a scale
-def update_calibration_factor(scale_num):
-    try:
-        new_factor = float(calibration_entries[scale_num].get())
-        scales[scale_num]["calibration_factor"] = new_factor
-    except ValueError:
-        pass  # Invalid input, ignore
-
 
 # Create the tabs
 tab_control = ttk.Notebook(window)
@@ -199,36 +182,15 @@ def update_time_interval():
 calibration_tab = ttk.Frame(tab_control)
 tab_control.add(calibration_tab, text="Calibration")
 
-# Create the calibration factor inputs for each scale in the "Calibration" tab
-calibration_entries = {}
-
-for scale_num in scales:
-    scale_frame = tk.Frame(calibration_tab)
-    scale_frame.pack(padx=space_between_frames, pady=10)
-
-    scale_label = tk.Label(scale_frame, text=f"Scale {scale_num} Calibration Factor:")
-    scale_label.pack()
-
-    calibration_entry = tk.Entry(scale_frame, width=10)
-    calibration_entry.insert(tk.END, scales[scale_num]["calibration_factor"])
-    calibration_entry.pack()
-
-    # update_button = tk.Button(
-    #     scale_frame, text="Update", command=lambda num=scale_num: update_calibration_factor(num)
-    # )
-    # update_button.pack()
-
-    calibration_entries[scale_num] = calibration_entry
-
-update_button = tk.Button(
-    calibration_tab, text="Update Calibration Factors", command=update_calibration_factors
-)
-update_button.pack()
+# update_button = tk.Button(
+#     calibration_tab, text="Update Calibration Factors", command=update_calibration_factors
+# )
+# update_button.pack()
 
 calibration_button = tk.Button(
     calibration_tab, text="Start Calibration", command=send_calibration_command
 )
-calibration_button.pack()
+calibration_button.pack(pady=10)
 
 # Configure the grid layout to adjust the column widths
 current_display_tab.grid_columnconfigure(0, weight=1)
