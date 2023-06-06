@@ -10,9 +10,13 @@ calibration_factors_received = False
 calibration_factors = [1.0, 1.0]  # Initialize with default values
 calibration_masses = [6.1, 6.1]  # Initialize with default values
 
+MAXIMUM_DISPLAY_LINES = 40
+
 def send_calibration_command():
     global calibration_in_progress
+    global calibration_factors_received
     calibration_in_progress = True
+    calibration_factors_received = False
     print(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n')
     ser.write(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n'.encode())
 
@@ -75,18 +79,23 @@ def display_numbers(scale_num):
             if calibration_in_progress and not calibration_factors_received:
                 print("values: ", values)
                 if values[0].startswith("CAL_FACTOR:"):
-                    calibration_factors[scale_num - 1] = float(values[0].split(":")[1].strip())
+                    calibration_factors_str = values[0].split(":")[1].strip()
+                    calibration_factors_str_list = calibration_factors_str.split(" ")
+                    calibration_factors = [round(float(factor), 2) for factor in calibration_factors_str_list]
                     print("cf[", scale_num - 1, "]: ", calibration_factors[scale_num - 1])
                     calibration_factors_received = True
                     calibration_in_progress = False
+                else:
+                    print("Cf not received")
             else:
                 print("values:", values)
-                number = float(values[scale_num - 1].split(":")[1].strip()) * calibration_factors[scale_num - 1]
-                print("number:", number)
+                print("cf[",scale_num - 1, "]: ", calibration_factors[scale_num - 1])
+                number = round(float(values[scale_num - 1].split(":")[1].strip()), 2) #* calibration_factors[scale_num - 1], 2)
+                print("number[",scale_num - 1, "]:", number)
 
                 scale_values.append(number)
                 scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
-                if len(scale_values) > 40:
+                if len(scale_values) > MAXIMUM_DISPLAY_LINES:
                     scale_values.pop(0)
                     scale_timestamps.pop(0)
                 scale_values_text = scales[scale_num]["text"]
@@ -181,11 +190,6 @@ def update_time_interval():
 # Create the "Calibration" tab
 calibration_tab = ttk.Frame(tab_control)
 tab_control.add(calibration_tab, text="Calibration")
-
-# update_button = tk.Button(
-#     calibration_tab, text="Update Calibration Factors", command=update_calibration_factors
-# )
-# update_button.pack()
 
 calibration_button = tk.Button(
     calibration_tab, text="Start Calibration", command=send_calibration_command
