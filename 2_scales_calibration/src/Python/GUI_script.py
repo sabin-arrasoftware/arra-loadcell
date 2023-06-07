@@ -12,14 +12,6 @@ calibration_masses = [6.1, 6.1]  # Initialize with default values
 
 MAXIMUM_DISPLAY_LINES = 40
 
-def send_calibration_command():
-    global calibration_in_progress
-    global calibration_factors_received
-    calibration_in_progress = True
-    calibration_factors_received = False
-    print(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n')
-    ser.write(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n'.encode())
-
 # Create the Tkinter window
 window = tk.Tk()
 window.title("Scale Display")
@@ -52,7 +44,6 @@ scales = {
 global interval
 interval = 1000
 
-
 # Function to start or stop displaying numbers for a scale
 def toggle_display(scale_num):
     scales[scale_num]["is_displaying"] = not scales[scale_num]["is_displaying"]
@@ -61,59 +52,94 @@ def toggle_display(scale_num):
         with open(filename, "a") as file:
             file.write("-----\n")
 
-# Function to display the numbers for a scale
-def display_numbers(scale_num):
+def send_calibration_command():
+    global calibration_in_progress
+    global calibration_factors_received
+    calibration_in_progress = True
+    calibration_factors_received = False
+    print(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n')
+    ser.write(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n'.encode())
+
+# Function to process the display of the numbers for a scale
+def process_display(scale_num):
     global calibration_in_progress
     global calibration_factors_received
     global calibration_factors
 
     if scales[scale_num]["is_displaying"]:
-        scale_values = scales[scale_num]["values"]
-        scale_timestamps = scales[scale_num]["timestamps"]
-        scale_checkbox_var = scales[scale_num]["checkbox"]
-
         values = read_serial_values()
+        print("values from process_display: ", values)
         if values:
             print("cip: ", calibration_in_progress)
             print("cfr: ", calibration_factors_received)
             if calibration_in_progress and not calibration_factors_received:
-                print("values: ", values)
-                if values[0].startswith("CAL_FACTOR:"):
-                    calibration_factors_str = values[0].split(":")[1].strip()
-                    calibration_factors_str_list = calibration_factors_str.split(" ")
-                    calibration_factors = [round(float(factor), 2) for factor in calibration_factors_str_list]
-                    print("cf[", scale_num - 1, "]: ", calibration_factors[scale_num - 1])
-                    calibration_factors_received = True
-                    calibration_in_progress = False
-                else:
-                    print("Cf not received")
+                handle_calibration_values(values)
             else:
-                print("values:", values)
-                print("cf[",scale_num - 1, "]: ", calibration_factors[scale_num - 1])
-                number = round(float(values[scale_num - 1].split(":")[1].strip()), 2) #* calibration_factors[scale_num - 1], 2)
-                print("number[",scale_num - 1, "]:", number)
-
-                scale_values.append(number)
-                scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
-                if len(scale_values) > MAXIMUM_DISPLAY_LINES:
-                    scale_values.pop(0)
-                    scale_timestamps.pop(0)
-                scale_values_text = scales[scale_num]["text"]
-                scale_values_text.delete(1.0, tk.END)
-                for value, timestamp in zip(scale_values, scale_timestamps):
-                    line = f"{timestamp}: {value}\n"
-                    scale_values_text.insert(tk.END, line)
-                write_to_file(scale_num, line)
+                handle_display_values(values, scale_num)
 
     global interval
-    window.after(interval, lambda: display_numbers(scale_num))
+    window.after(interval, lambda: process_display(scale_num))
+
+# Function to handle calibration values
+def handle_calibration_values(value):
+    print("value from handle_calibration_values:", value)
+    if value[0].startswith("CAL_FACTOR:"):
+        process_calibration_response(value[0])
+    else:
+        print("Cf not received")
+
+def process_calibration_response(response):
+    global calibration_in_progress
+    global calibration_factors_received
+    global calibration_factors
+    
+    print("response from process_calibration_response: ", response)
+    calibration_factors_str = response.split(":")[1].strip()
+    calibration_factors_str_list = calibration_factors_str.split(" ")
+    calibration_factors = [round(float(factor), 2) for factor in calibration_factors_str_list]
+    print("Calibration Factors:", calibration_factors)
+    calibration_factors_received = True
+    calibration_in_progress = False
+
+# Function to handle display values
+def handle_display_values(values, scale_num):    
+    print("values from handle_display_values: ", values)
+    if values != ['']:
+        display_value(scale_num, values[scale_num - 1].split(":")[1].strip())
+
+def display_value(scale_num, value):
+    add_value(scale_num, value)
+    remove_excess_values(scale_num)
+    update_display(scale_num)
+
+def add_value(scale_num, value):
+    scale_values = scales[scale_num]["values"]
+    scale_timestamps = scales[scale_num]["timestamps"]
+    scale_values.append(round(float(value), 2))
+    scale_timestamps.append(datetime.now().strftime("%H:%M:%S.%f"))
+
+def remove_excess_values(scale_num):
+    scale_values = scales[scale_num]["values"]
+    scale_timestamps = scales[scale_num]["timestamps"]
+    if len(scale_values) > MAXIMUM_DISPLAY_LINES:
+        scale_values.pop(0)
+        scale_timestamps.pop(0)
+
+def update_display(scale_num):
+    scale_values = scales[scale_num]["values"]
+    scale_timestamps = scales[scale_num]["timestamps"]
+    scale_values_text = scales[scale_num]["text"]
+    scale_values_text.delete(1.0, tk.END)
+    for value, timestamp in zip(scale_values, scale_timestamps):
+        line = f"{timestamp}: {value}\n"
+        scale_values_text.insert(tk.END, line)
+    write_to_file(scale_num, line)
 
 # Function to write the last line to a file for a scale
 def write_to_file(scale_num, line):
     filename = f"scale{scale_num}_values.txt"
     with open(filename, "a") as file:
         file.write(line)  # Append the latest line to the file
-
 
 # Function to clear the values and timestamps for a scale
 def clear_values(scale_num):
@@ -155,7 +181,7 @@ for scale_num in scales:
     scales[scale_num]["checkbox"] = scale_checkbox_var
     scale_checkbox_var.set(scale_is_displaying)
 
-    display_numbers(scale_num)
+    process_display(scale_num)
 
     clear_button = tk.Button(scale_frame, text="Clear", command=lambda num=scale_num: clear_values(num))
     clear_button.pack()
@@ -176,7 +202,6 @@ time_interval.grid(row=1, column=1, padx=5, pady=5)
 
 update_button = tk.Button(settings_frame, text="Update", command=lambda: update_time_interval())
 update_button.grid(row=1, column=2, padx=5, pady=5)
-
 
 # Function to update the time interval
 def update_time_interval():
@@ -199,7 +224,6 @@ calibration_button.pack(pady=10)
 # Configure the grid layout to adjust the column widths
 current_display_tab.grid_columnconfigure(0, weight=1)
 current_display_tab.grid_columnconfigure(1, weight=1)
-
 
 # Open the serial port
 ser = serial.Serial("/dev/ttyUSB0", 9600)  # The appropriate serial port via USB cable
