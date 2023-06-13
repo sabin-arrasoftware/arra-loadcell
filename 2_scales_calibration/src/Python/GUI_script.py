@@ -1,8 +1,8 @@
-import random
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 import serial
+from tkinter import messagebox
 
 # Global variables
 calibration_in_progress = False
@@ -52,13 +52,18 @@ def toggle_display(scale_num):
         with open(filename, "a") as file:
             file.write("-----\n")
 
-def send_calibration_command():
-    global calibration_in_progress
-    global calibration_factors_received
-    calibration_in_progress = True
-    calibration_factors_received = False
-    print(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n')
-    ser.write(f'CALIBRATE: {calibration_masses[0]} {calibration_masses[1]}\n'.encode())
+def send_calibration_command(scale_num):
+    if scale_num == 1 or scale_num == 2:
+        global calibration_in_progress
+        global calibration_factors_received
+        calibration_in_progress = True
+        calibration_factors_received = False
+        calibration_mass = calibration_masses[scale_num - 1]
+        command = f"CALIBRATE: {scale_num} {calibration_mass}"
+        ser.write(command.encode())
+        print(command)
+    else:
+        print("Invalid scale number")
 
 # Function to process the display of the numbers for a scale
 def process_display(scale_num):
@@ -92,7 +97,7 @@ def process_calibration_response(response):
     global calibration_in_progress
     global calibration_factors_received
     global calibration_factors
-    
+
     print("response from process_calibration_response: ", response)
     calibration_factors_str = response.split(":")[1].strip()
     calibration_factors_str_list = calibration_factors_str.split(" ")
@@ -150,13 +155,9 @@ def clear_values(scale_num):
     scale_values_text = scales[scale_num]["text"]
     scale_values_text.delete(1.0, tk.END)
 
-# Create the tabs
-tab_control = ttk.Notebook(window)
-tab_control.pack(fill="both", expand=True)
-
 # Create the "Current Display" tab
-current_display_tab = ttk.Frame(tab_control)
-tab_control.add(current_display_tab, text="Current Display")
+current_display_tab = ttk.Frame(window)
+current_display_tab.pack(fill="both", expand=True)
 
 # Create the checkboxes and value displays for each scale in the "Current Display" tab
 for scale_num in scales:
@@ -186,6 +187,12 @@ for scale_num in scales:
     clear_button = tk.Button(scale_frame, text="Clear", command=lambda num=scale_num: clear_values(num))
     clear_button.pack()
 
+    calibrate_button = tk.Button(
+        scale_frame, text="Calibrate", command=lambda num=scale_num: send_calibration_command(num)
+    )
+    calibrate_button.pack()
+
+
 # Create the "Settings" section in the "Current Display" tab
 settings_frame = tk.Frame(current_display_tab)
 settings_frame.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
@@ -203,6 +210,27 @@ time_interval.grid(row=1, column=1, padx=5, pady=5)
 update_button = tk.Button(settings_frame, text="Update", command=lambda: update_time_interval())
 update_button.grid(row=1, column=2, padx=5, pady=5)
 
+def send_calibration_command(scale_num):
+    if scale_num == 1 or scale_num == 2:
+        global calibration_in_progress
+        global calibration_factors_received
+        calibration_in_progress = True
+        calibration_factors_received = False
+        calibration_mass = calibration_masses[scale_num - 1]
+        command = f"CALIBRATE: {scale_num} {calibration_mass}"
+        
+        message = f"Place the known mass on scale {scale_num} ..."
+        response = messagebox.askokcancel("Calibration", message)
+        
+        if response:
+            ser.write(command.encode())
+            print(command)
+        else:
+            print("Calibration canceled")
+    else:
+        print("Invalid scale number")
+
+
 # Function to update the time interval
 def update_time_interval():
     new_interval = time_interval.get()
@@ -211,15 +239,6 @@ def update_time_interval():
         if new_interval > 0:
             global interval
             interval = new_interval
-
-# Create the "Calibration" tab
-calibration_tab = ttk.Frame(tab_control)
-tab_control.add(calibration_tab, text="Calibration")
-
-calibration_button = tk.Button(
-    calibration_tab, text="Start Calibration", command=send_calibration_command
-)
-calibration_button.pack(pady=10)
 
 # Configure the grid layout to adjust the column widths
 current_display_tab.grid_columnconfigure(0, weight=1)
