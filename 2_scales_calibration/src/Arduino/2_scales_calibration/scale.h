@@ -15,11 +15,9 @@ namespace  arra {
             }
 
             void Calibrate() {
-                delay(5000);
                 float scale_weight = 0.0;
                 for (int i = 0; i < numReadings_; ++i) {
                     scale_weight += hx711_.get_value();
-                    delay(100);
                 }
                 scale_weight /= numReadings_;
                 float calibrationFactor = scale_weight / calibrationMass_;

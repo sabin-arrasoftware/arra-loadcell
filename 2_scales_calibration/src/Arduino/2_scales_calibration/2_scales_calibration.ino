@@ -1,24 +1,22 @@
 // For the calibration of each scale,
 // type in the Serial Monitor prompt a message with the following format:
-// CALIBRATE: <scale number (1 or 2)> <known weight of object on scale measured in grams (e.g 6.1 for a 50 bani coin)>
-// then press Ctrl + Enter and follow the instruction to place an object on the scale
-// There should be a space between CALIBRATE: and the scale number
-// and a space between the scale number and the weight
+// Calibrate_<scale number (1 or 2)>
+// then press Ctrl + Enter 
 // e.g. to calibrate scale 1, type the message
-// CALIBRATE: 1 6.1
+// Calibrate_1
 // then place a 50 bani coin on scale 1
 // To calibrate scale 2, type the message
-// CALIBRATE: 2 6.1
+// Calibrate_2
 // then place a 50 bani coin on scale 2
 
 #include <HX711.h>
 #include "scale.h"
-#include "serial_reader.h"
+#include "serial.h"
 
-
-arra::Serial rw;
-arra::Scale scale_1(15,14);
-arra::Scale scale_2(17,16);
+HardwareSerial& serial = Serial;
+arra::Serial rw(serial);
+arra::Scale scale_1(15, 14);
+arra::Scale scale_2(17, 16);
 
 void setup()
 {
@@ -31,8 +29,5 @@ void loop()
 {
   rw.read();
 
-  rw.write("Scale_1: " + String(scale_1.GetValue()));
-  rw.write("Scale_2: " + String(scale_2.GetValue()));
-
-  delay(500);
+  rw.write("Scale_1: " + String(scale_1.GetValue()) + " Scale_2: " + String(scale_2.GetValue()));
 }

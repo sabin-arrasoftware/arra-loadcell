@@ -9,14 +9,11 @@ namespace arra {
 
     static const int baud = 9600;
     public:
-        Serial(HardwareSerial& serial) : serial_(serial), count_(0){}
+        Serial(HardwareSerial& serial) : serial_(serial){}
 
         // Add callback for given event.
         void add_callback(const String& cmd, fn_event cb){
           shm_.insertNode(cmd, cb);
-          // cmds_[count_] = cmd;
-          // callbacks_[count_] = cb;
-          // ++count_;
         }
 
         void start() {
@@ -30,17 +27,15 @@ namespace arra {
                 cmd.trim();
                 
                 fn_event cb = shm_.getValue(cmd);
-                //fn_event cb = static_cast<fn_event>(shm_.getValue(cmd));
 
-                if (cb)
+                if (cb) 
                 {
-                  cb();
-                }
-                else
+                    cb();
+                } 
+                else 
                 {
-                  serial_.println("Key not found");
-                }
-                  
+                    serial_.println("Key not found");
+                }                
                 
             }
         }
@@ -51,11 +46,6 @@ namespace arra {
 
     private:
         HardwareSerial& serial_;
-
-        // Registered callbacks for triggered event.
-        // Key = cmd, value = callback.
-        String cmds_[10];
-        fn_event callbacks_[10];
 
         int count_;
 
