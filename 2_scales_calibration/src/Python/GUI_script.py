@@ -6,11 +6,9 @@ from tkinter import messagebox
 
 # Global variables
 calibration_in_progress = False
-calibration_factors_received = False
-calibration_factors = [1.0, 1.0]  # Initialize with default values
-calibration_masses = [6.1, 6.1]  # Initialize with default values
 
 MAXIMUM_DISPLAY_LINES = 40
+SCALES_VALUES_SEPARATOR = "  "
 
 # Create the Tkinter window
 window = tk.Tk()
@@ -52,64 +50,34 @@ def toggle_display(scale_num):
         with open(filename, "a") as file:
             file.write("-----\n")
 
-def send_calibration_command(scale_num):
-    if scale_num == 1 or scale_num == 2:
-        global calibration_in_progress
-        global calibration_factors_received
-        calibration_in_progress = True
-        calibration_factors_received = False
-        calibration_mass = calibration_masses[scale_num - 1]
-        command = f"CALIBRATE: {scale_num} {calibration_mass}"
-        ser.write(command.encode())
-        print(command)
-    else:
-        print("Invalid scale number")
-
 # Function to process the display of the numbers for a scale
 def process_display(scale_num):
     global calibration_in_progress
-    global calibration_factors_received
-    global calibration_factors
 
     if scales[scale_num]["is_displaying"]:
         values = read_serial_values()
         print("values from process_display: ", values)
         if values:
             print("cip: ", calibration_in_progress)
-            print("cfr: ", calibration_factors_received)
-            if calibration_in_progress and not calibration_factors_received:
-                handle_calibration_values(values)
+
+            if calibration_in_progress:
+                handle_calibration_messages(values)
             else:
                 handle_display_values(values, scale_num)
 
     global interval
     window.after(interval, lambda: process_display(scale_num))
 
-# Function to handle calibration values
-def handle_calibration_values(value):
-    print("value from handle_calibration_values:", value)
-    if value[0].startswith("CAL_FACTOR:"):
-        process_calibration_response(value[0])
-    else:
-        print("Cf not received")
-
-def process_calibration_response(response):
+def handle_calibration_messages(values):
     global calibration_in_progress
-    global calibration_factors_received
-    global calibration_factors
-
-    print("response from process_calibration_response: ", response)
-    calibration_factors_str = response.split(":")[1].strip()
-    calibration_factors_str_list = calibration_factors_str.split(" ")
-    calibration_factors = [round(float(factor), 2) for factor in calibration_factors_str_list]
-    print("Calibration Factors:", calibration_factors)
-    calibration_factors_received = True
-    calibration_in_progress = False
+    print("values from handle_calibration_messages: ", values)
+    if values == ['Calling callback']:
+        calibration_in_progress = False
 
 # Function to handle display values
 def handle_display_values(values, scale_num):    
     print("values from handle_display_values: ", values)
-    if values != ['']:
+    if values not in [[''], ['cmd: Calibrate_1'], ['cmd: Calibrate_2'], ['Calling callback']]:
         display_value(scale_num, values[scale_num - 1].split(":")[1].strip())
 
 def display_value(scale_num, value):
@@ -210,27 +178,6 @@ time_interval.grid(row=1, column=1, padx=5, pady=5)
 update_button = tk.Button(settings_frame, text="Update", command=lambda: update_time_interval())
 update_button.grid(row=1, column=2, padx=5, pady=5)
 
-def send_calibration_command(scale_num):
-    if scale_num == 1 or scale_num == 2:
-        global calibration_in_progress
-        global calibration_factors_received
-        calibration_in_progress = True
-        calibration_factors_received = False
-        calibration_mass = calibration_masses[scale_num - 1]
-        command = f"CALIBRATE: {scale_num} {calibration_mass}"
-        
-        message = f"Place the known mass on scale {scale_num} ..."
-        response = messagebox.askokcancel("Calibration", message)
-        
-        if response:
-            ser.write(command.encode())
-            print(command)
-        else:
-            print("Calibration canceled")
-    else:
-        print("Invalid scale number")
-
-
 # Function to update the time interval
 def update_time_interval():
     new_interval = time_interval.get()
@@ -247,11 +194,30 @@ current_display_tab.grid_columnconfigure(1, weight=1)
 # Open the serial port
 ser = serial.Serial("/dev/ttyUSB0", 9600)  # The appropriate serial port via USB cable
 
+def send_calibration_command(scale_num):
+    if scale_num == 1 or scale_num == 2:
+        global calibration_in_progress
+        calibration_in_progress = True
+        command = f"Calibrate_{scale_num}" 
+        
+        message = f"Place known mass on scale {scale_num} ..."
+        response = messagebox.askokcancel("Calibration", message)
+        
+        if response:
+            ser.write(command.encode())
+            print(command)
+        else:
+            print("Calibration canceled")
+    else:
+        print("Invalid scale number")
+
+
 # Function to read values from the serial port and update the textboxes
 def read_serial_values():
     if ser.in_waiting > 0:
         line = ser.readline().decode().strip()
-        values = line.split("  ")
+        print("line: ", line)
+        values = line.split(SCALES_VALUES_SEPARATOR)
         return values
     return None
 

@@ -20,34 +20,50 @@ namespace arra {
             serial_.begin(baud);
         }
 
-        void read() {
+        void handle_serial_data() { 
             if (serial_.available())
             {
-                String cmd = serial_.readStringUntil('\n');
-                cmd.trim();
-                
-                fn_event cb = shm_.getValue(cmd);
-
-                if (cb) 
-                {
-                    cb();
-                } 
-                else 
-                {
-                    serial_.println("Key not found");
-                }                
-                
+                String cmd = get_command();
+                write("cmd: " + cmd);
+                fn_event cb = get_callback(cmd);
+                execute_callback(cb);                
+                print_result(cb);
             }
-        }
+        } 
 
         void write(const String& msg) {
             serial_.println(msg);
         }
 
+        String get_command() {
+            String cmd = serial_.readStringUntil('\n');
+            cmd.trim();
+            return cmd;
+        }
+
+        fn_event get_callback(const String& cmd) {
+            return shm_.getValue(cmd); 
+        } 
+
+        void execute_callback(fn_event cb) {
+            if (cb) 
+            {
+                cb();
+            }
+        }
+
+        void print_result(fn_event cb) {
+            if (!cb) 
+            {
+                write("Key not found");
+                return;
+            }
+
+            write("Calling callback");
+        }
+
     private:
         HardwareSerial& serial_;
-
-        int count_;
 
         SHashMap<String, fn_event> shm_;
     };
