@@ -1,9 +1,18 @@
 
 //#include <ArduinoSTL.h>
 #include "HashMap.h"
+#include "Stream.h"
 
 namespace arra {
     typedef void (*fn_event)();
+
+    // Define message structure
+    struct Message {
+      byte id;
+      byte length;
+      char content[32];  // Adjust the buffer size based on maximum message length
+    };
+
 
     class Serial {
 
@@ -28,6 +37,17 @@ namespace arra {
                 fn_event cb = get_callback(cmd);
                 execute_callback(cb);                
                 print_result(cb);
+                // Message message;
+                // read_message(message);
+
+                // write("Received message: ");
+                // write_message(message);
+
+                // String cmd = String(message.content);
+                // write("cmd: " + cmd);
+                // fn_event cb = get_callback(cmd);
+                // execute_callback(cb);
+                // print_result(cb);
             }
         } 
 
@@ -66,5 +86,22 @@ namespace arra {
         HardwareSerial& serial_;
 
         SHashMap<String, fn_event> shm_;
+
+    //   void read_message(Message& message) {
+    //     byte id = serial_.read();
+    //     byte length = serial_.read();
+    //     serial_.readBytes(message.content, length);
+    //     message.id = id;
+    //     message.length = length;
+    //   }
+
+    //   void write_message(const Message& message) {
+    //     serial_.print("ID: ");
+    //     serial_.println(message.id);
+    //     serial_.print("Length: ");
+    //     serial_.println(message.length);
+    //     serial_.print("Content: ");
+    //     serial_.println(message.content);
+    //   }
     };
 }
