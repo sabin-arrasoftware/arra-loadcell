@@ -10,9 +10,9 @@
 // then place a 50 bani coin on scale 2
 
 #include <HX711.h>
-#include "scale.h"
-#include "serial.h"
-#include "commands.pb.h"
+#include "headers/scale.h"
+#include "headers/serial.h"
+#include "headers/command.h"
 
 HardwareSerial& serial = Serial;
 arra::Serial rw(serial);
@@ -45,15 +45,10 @@ void configureScale(arra::Scale& scale)
 
 void setup()
 {
-  // rw.add_callback("Calibrate_1", [&scale_1]() { scale_1.Calibrate(); });
-  // rw.add_callback("Calibrate_2", [&scale_2]() { scale_2.Calibrate(); });  
-  // // add callback for config
-  // rw.add_callback("Config_1", [&scale_1]() { configureScale(scale_1); });
-  // rw.add_callback("Config_2", [&scale_2]() { configureScale(scale_2); });
-  rw.add_callback("0", [&scale_1]() { scale_1.Calibrate(); });
-  rw.add_callback("1", [&scale_2]() { scale_2.Calibrate(); }); 
-  rw.add_callback("2", [&scale_1]() { configureScale(scale_1); });
-  rw.add_callback("3", [&scale_2]() { configureScale(scale_2); });
+  rw.add_callback("1", [&scale_1]() { scale_1.Calibrate(); });
+  rw.add_callback("2", [&scale_2]() { scale_2.Calibrate(); }); 
+  rw.add_callback("3", [&scale_1]() { configureScale(scale_1); });
+  rw.add_callback("4", [&scale_2]() { configureScale(scale_2); });
   rw.start();
 }
 

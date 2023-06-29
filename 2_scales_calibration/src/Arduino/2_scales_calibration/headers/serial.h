@@ -1,18 +1,10 @@
 
 //#include <ArduinoSTL.h>
-#include "HashMap.h"
-#include "Stream.h"
+#include "../hash_map/HashMap.h"
+//#include "Stream.h"
 
 namespace arra {
     typedef void (*fn_event)();
-
-    // Define message structure
-    struct Message {
-      byte id;
-      byte length;
-      char content[32];  // Adjust the buffer size based on maximum message length
-    };
-
 
     class Serial {
 
