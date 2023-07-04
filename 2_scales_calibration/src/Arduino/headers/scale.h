@@ -1,5 +1,5 @@
 
-
+#pragma once
 #include <HX711.h>
 
 namespace  arra {
@@ -11,6 +11,8 @@ namespace  arra {
 
     class Scale {   
         public:
+            Scale() = default; // Default constructor
+
             Scale(const int& dout, const int& sck) {
                 hx711_.begin(dout, sck);
                 hx711_.tare();
