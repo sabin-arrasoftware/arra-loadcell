@@ -1,27 +1,25 @@
 #pragma once
 #include "scale.h"
+#include "proto.h"
 
 namespace  arra {
-    //config
-    struct scale_config {
-        float calibrationMass = 6.1;
-        int numReadings = 10;
-    };
 
     class Scales {   
         public:
             Scales() {}
 
-            void Calibrate(const byte* content) {
-                const int id = static_cast<int>(content[1]);
+            void Calibrate(const byte* buffer) {
+                const int id = static_cast<int>(buffer[1]);
                 scales_[id].Calibrate();
             }
 
-            void Config(const byte* content) {
-                const int id = content[1];
+            void Config(const byte* buffer) {           
+                Message message;
+                decode_config_command(buffer, message);
+                const int id = message.config.scaleIndex;
                 scale_config config;
-                config.calibrationMass = decodeConfigMass(content) / 100.0;
-                config.numReadings = content[4];
+                config.calibrationMass = message.config.calibrationMass;
+                config.numReadings = message.config.numReadings;
                 scales_[id].Config(config);
             }
 
@@ -33,10 +31,6 @@ namespace  arra {
 
         private:
             Scale scales_[15];
-
-            int decodeConfigMass(const byte* content) {
-                return ((static_cast<int>(content[2]) << 8) | static_cast<int>(content[3]));
-            }
     };
 }
 

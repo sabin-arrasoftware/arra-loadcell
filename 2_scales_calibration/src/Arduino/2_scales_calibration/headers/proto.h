@@ -9,8 +9,6 @@ enum CommandType
   LAST
 };
 
-//const byte MESSAGE_START_BYTE = 0xFF;
-
 struct CalibrateMessage
 {
   byte scaleIndex;
@@ -29,12 +27,12 @@ union Message
   ConfigMessage config;
 };
 
-void encodeCalibrateCommand(const Message& message, byte* buffer)
+void encode_calibrate_command(const Message& message, byte* buffer)
 {
   buffer[1] = message.calibrate.scaleIndex;
 }
 
-void encodeConfigCommand(const Message& message, byte* buffer)
+void encode_config_command(const Message& message, byte* buffer)
 {
   buffer[1] = message.config.scaleIndex;
   int calibrationMassInt = static_cast<int>(message.config.calibrationMass * 100);
@@ -43,18 +41,18 @@ void encodeConfigCommand(const Message& message, byte* buffer)
   buffer[4] = message.config.numReadings;
 }
 
-byte* encodeMessage(CommandType command, const Message& message, byte* buffer)
+byte* encode_message(CommandType command, const Message& message, byte* buffer)
 {
   switch (command)
   {
     case CALIBRATE:
       buffer[0] = command;
-      encodeCalibrateCommand(message, buffer);
+      encode_calibrate_command(message, buffer);
       break;
 
     case CONFIG:
       buffer[0] = command;
-      encodeConfigCommand(message, buffer);
+      encode_config_command(message, buffer);
       break;
 
     default:
@@ -66,32 +64,34 @@ byte* encodeMessage(CommandType command, const Message& message, byte* buffer)
 }
 
 // Reset a Message object to its default state
-void resetMessage(Message& message)
+void reset_message(Message& message)
 {
-  message.calibrate.scaleIndex = -1;
-  message.config.scaleIndex = -1;
+  message.config.scaleIndex = 255;
   message.config.calibrationMass = 0.0f;
   message.config.numReadings = 0;
 }
 
-bool decodeCalibrateCommand(const byte* buffer, Message& message)
+Message decode_calibrate_command(const byte* buffer)
 {  
-  message.calibrate.scaleIndex = buffer[1];
-  return true;
+  Message message;
+  message.calibrate.scaleIndex = static_cast<byte>(buffer[1]);
+  return message;
 }
 
-bool decodeConfigCommand(const byte* buffer, Message& message)
+Message decode_config_command(const byte* buffer)
 {  
-  message.config.scaleIndex = buffer[1];
+  Message message;
+  message.config.scaleIndex = static_cast<byte>(buffer[1]);
   int calibrationMassValue = static_cast<int>(buffer[2]) << 8 | static_cast<int>(buffer[3]);
   message.config.calibrationMass = static_cast<float>(calibrationMassValue) / 100.0;
-  message.config.numReadings = buffer[4];
-  return true;
+  message.config.numReadings = static_cast<int>(buffer[4]);
+  return message;
 }
 
-Message decodeMessage(const byte* buffer)
+Message decode_message(const byte* buffer)
 {
   Message message;
+  reset_message(message);
 
   CommandType command = static_cast<CommandType>(buffer[0]);
 
@@ -100,12 +100,11 @@ Message decodeMessage(const byte* buffer)
   switch (command)
   {
     case CALIBRATE:
-      success = decodeCalibrateCommand(buffer, message);
-      
+      decode_calibrate_command(buffer, message);      
       break;
 
     case CONFIG:
-      success = decodeConfigCommand(buffer, message);
+      decode_config_command(buffer, message);
       break;
 
     default:
@@ -116,9 +115,29 @@ Message decodeMessage(const byte* buffer)
   if (!success)
       {
         // Invalid message
-        resetMessage(message);
       }
 
   return message;
 }
+
+bool is_calibrate_message(const Message& message)
+{  
+  return (message.calibrate.scaleIndex != 255 && message.config.numReadings == 0);
+}
+
+bool is_config_message(const Message& message)
+{
+  return (message.config.scaleIndex != 255 && message.config.numReadings != 0);
+}
+
+const CalibrateMessage& get_calibrate_message(const Message& message)
+{
+  return message.calibrate;
+}
+
+const ConfigMessage& get_config_message(const Message& message)
+{
+  return message.config;
+}
+
 }

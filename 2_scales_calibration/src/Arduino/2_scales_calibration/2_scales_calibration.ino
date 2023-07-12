@@ -9,18 +9,19 @@
 // Calibrate_2
 // then place a 50 bani coin on scale 2
 
-#pragma once
-#include <HX711.h>
-#include "../headers/scale.h"
-#include "../headers/scales.h"
-#include "../headers/commandHandler.h"
-#include "../headers/proto.h"
+//#pragma once
+//#include <HX711.h>
+//#include <Arduino.h>
+#include "headers/scale.h"
+#include "headers/scalesHandler.h"
+#include "headers/commandHandler.h"
+#include "headers/proto.h"
+#include "headers/serial.h"
 
 HardwareSerial& serial = Serial;
 arra::Serial rw(serial);
 arra::Scale scale_1(15, 14);
 arra::Scale scale_2(17, 16);
-//arra::CommandHandler ch;
 arra::Message message;
 arra::Scale scales[] = {scale_1, scale_2};
 
@@ -51,20 +52,21 @@ void configureScale(arra::Scale& scale)
 }
 
 
-
 void setup()
 {
-  // rw.add_callback("1", [&scale_1]() { scale_1.Calibrate(); });
-  // rw.add_callback("2", [&scale_2]() { scale_2.Calibrate(); }); 
-  // rw.add_callback("3", [&scale_1]() { configureScale(scale_1); });
-  // rw.add_callback("4", [&scale_2]() { configureScale(scale_2); });
   rw.start();
-
 }
 
 void loop()
 {
-  message = rw.handle_serial_data();
-  //ch.handleCommand(message);
-  rw.write("Scale_1: " + String(scale_1.GetValue()) + "  Scale_2: " + String(scale_2.GetValue()));
+  if (rw.available()) {
+    byte* buffer = rw.get_buffer();
+
+    arra::CommandHandler ch = arra::CommandHandler(buffer);
+
+    ch.get_command_from_buffer();
+
+    arra::Message decodedMessage = arra::decode_message(buffer);   
+  }
+
 }
