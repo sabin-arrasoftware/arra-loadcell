@@ -42,7 +42,19 @@ void processSerialData()
 {
   if (rw.available())
   {
-    ch.set_buffer(rw.get_buffer());
+    byte* buffer = rw.get_buffer();
+    ch.set_buffer(buffer);
+    
+
+    // Print the buffer
+    rw.write("Buffer: ");
+    for (int i = 0; i < 16; i++) {
+      rw.write(String(buffer[i]));
+    }
+    
+    arra::Message message = arra::decode_message(buffer);
+    rw.printMessage(message);
+
     ch.get_command_from_buffer();
     ch.activate_command();
   }
@@ -65,6 +77,6 @@ void setup()
 void loop()
 {
   displayScaleValues();
-  
+
   processSerialData();
 }

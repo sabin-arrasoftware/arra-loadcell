@@ -43,34 +43,34 @@ namespace arra {
             return buffer;
         }
 
-        // void printMessage(const Message& message)    {
-        //             serial_.print("message.calibrate.scaleIndex: ");
-        //             serial_.println(message.calibrate.scaleIndex);
-        //             serial_.print("isCalibrateMessage: ");
-        //             serial_.println(isCalibrateMessage(message));
-        //             if (isCalibrateMessage(message))
-        //             {
-        //                 const CalibrateMessage& calibrate = getCalibrateMessage(message);
-        //                 write("Calibrate Message");
-        //                 serial_.print("Scale Index: ");
-        //                 serial_.println(static_cast<byte>(calibrate.scaleIndex));
-        //             }
-        //             else if (isConfigMessage(message))
-        //             {
-        //                 const ConfigMessage& config = getConfigMessage(message);
-        //                 write("Config Message");
-        //                 serial_.print("Scale Index: ");
-        //                 serial_.println(static_cast<byte>(config.scaleIndex));
-        //                 serial_.print("Calibration Mass: ");
-        //                 serial_.println(config.calibrationMass);
-        //                 serial_.print("Num Readings: ");
-        //                 serial_.println(config.numReadings);
-        //             }
-        //             else
-        //             {
-        //                 write("Unknown Message");
-        //             }
-        //         }
+        void printMessage(const Message& message)    {
+                    serial_.print("message.calibrate.scaleIndex: ");
+                    serial_.println(message.calibrate.scaleIndex);
+                    serial_.print("isCalibrateMessage: ");
+                    serial_.println(is_calibrate_message(message));
+                    if (is_calibrate_message(message))
+                    {
+                        const CalibrateMessage& calibrate = get_calibrate_message(message);
+                        write("Calibrate Message");
+                        serial_.print("Scale Index: ");
+                        serial_.println(static_cast<byte>(calibrate.scaleIndex));
+                    }
+                    else if (is_config_message(message))
+                    {
+                        const ConfigMessage& config = get_config_message(message);
+                        write("Config Message");
+                        serial_.print("Scale Index: ");
+                        serial_.println(static_cast<byte>(config.scaleIndex));
+                        serial_.print("Calibration Mass: ");
+                        serial_.println(config.calibrationMass);
+                        serial_.print("Num Readings: ");
+                        serial_.println(config.numReadings);
+                    }
+                    else
+                    {
+                        write("Unknown Message");
+                    }
+                }
 
              
 
