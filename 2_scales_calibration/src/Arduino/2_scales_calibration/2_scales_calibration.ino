@@ -15,58 +15,56 @@
 #include "headers/scale.h"
 #include "headers/scalesHandler.h"
 #include "headers/commandHandler.h"
-#include "headers/proto.h"
 #include "headers/serial.h"
+#include "headers/proto.h"
 
 HardwareSerial& serial = Serial;
 arra::Serial rw(serial);
-arra::Scale scale_1(15, 14);
-arra::Scale scale_2(17, 16);
-arra::Message message;
-arra::Scale scales[] = {scale_1, scale_2};
+arra::Scales sh;
+arra::CommandHandler ch;
 
+// arra::Scale scale_1(15, 14);
+// arra::Scale scale_2(17, 16);
+// arra::Message message;
+// arra::Scale scales[] = {scale_1, scale_2};
 
-
-void configureScale(arra::Scale& scale)
+void CalibrateCallback(const byte* buffer)
 {
-  arra::scale_config newConfig;
-  // Set the new configuration values for scale based on your requirements
-  // Read the user input for calibrationMass
-  float calibrationMass;
-  serial.println("Enter calibrationMass:");
-  while (!serial.available()) {
-    // Wait for user input
-  }
-  calibrationMass = serial.parseFloat();
-
-  // Read the user input for numReadings
-  int numReadings;
-  serial.println("Enter numReadings:");
-  while (!serial.available()) {
-    // Wait for user input
-  }
-  numReadings = serial.parseInt();
-  newConfig.calibrationMass = calibrationMass;
-  newConfig.numReadings = numReadings;
-  scale.Config(newConfig);
+    sh.Calibrate(buffer);
 }
 
+void ConfigCallback(const byte* buffer)
+{
+    sh.Config(buffer);
+}
+
+void processSerialData()
+{
+  if (rw.available())
+  {
+    ch.set_buffer(rw.get_buffer());
+    ch.get_command_from_buffer();
+    ch.activate_command();
+  }
+}
+
+void displayScaleValues()
+{
+  rw.write("Scale_1: " + String(sh.GetValueFromIndex(0)) + "  Scale_2: " + String(sh.GetValueFromIndex(1)));
+}
 
 void setup()
 {
+  sh.AddScale(15, 14, 0);
+  sh.AddScale(17, 16, 1);
+  ch.add_callback(arra::CALIBRATE, CalibrateCallback);
+  ch.add_callback(arra::CONFIG, ConfigCallback);
   rw.start();
 }
 
 void loop()
 {
-  if (rw.available()) {
-    byte* buffer = rw.get_buffer();
-
-    arra::CommandHandler ch = arra::CommandHandler(buffer);
-
-    ch.get_command_from_buffer();
-
-    arra::Message decodedMessage = arra::decode_message(buffer);   
-  }
-
+  displayScaleValues();
+  
+  processSerialData();
 }

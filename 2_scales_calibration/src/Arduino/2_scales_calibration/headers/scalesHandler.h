@@ -25,9 +25,11 @@ namespace  arra {
 
             void AddScale(const int pinOut, const int pinSck, const int id) {
                 scales_[id] = Scale(pinOut, pinSck);
-            }
+            }   
 
-            
+            float GetValueFromIndex(const int index) {
+                return scales_[index].GetValue();
+            }         
 
         private:
             Scale scales_[15];

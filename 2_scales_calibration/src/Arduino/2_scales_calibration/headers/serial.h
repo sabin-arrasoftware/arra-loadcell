@@ -43,9 +43,36 @@ namespace arra {
             return buffer;
         }
 
-        CommandType get_command_from_buffer(const byte* buffer) {
-            return static_cast<CommandType>(buffer[0]);
-        }        
+        // void printMessage(const Message& message)    {
+        //             serial_.print("message.calibrate.scaleIndex: ");
+        //             serial_.println(message.calibrate.scaleIndex);
+        //             serial_.print("isCalibrateMessage: ");
+        //             serial_.println(isCalibrateMessage(message));
+        //             if (isCalibrateMessage(message))
+        //             {
+        //                 const CalibrateMessage& calibrate = getCalibrateMessage(message);
+        //                 write("Calibrate Message");
+        //                 serial_.print("Scale Index: ");
+        //                 serial_.println(static_cast<byte>(calibrate.scaleIndex));
+        //             }
+        //             else if (isConfigMessage(message))
+        //             {
+        //                 const ConfigMessage& config = getConfigMessage(message);
+        //                 write("Config Message");
+        //                 serial_.print("Scale Index: ");
+        //                 serial_.println(static_cast<byte>(config.scaleIndex));
+        //                 serial_.print("Calibration Mass: ");
+        //                 serial_.println(config.calibrationMass);
+        //                 serial_.print("Num Readings: ");
+        //                 serial_.println(config.numReadings);
+        //             }
+        //             else
+        //             {
+        //                 write("Unknown Message");
+        //             }
+        //         }
+
+             
 
     private:
         HardwareSerial& serial_;        

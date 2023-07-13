@@ -71,21 +71,17 @@ void reset_message(Message& message)
   message.config.numReadings = 0;
 }
 
-Message decode_calibrate_command(const byte* buffer)
+void decode_calibrate_command(const byte* buffer, Message& message)
 {  
-  Message message;
-  message.calibrate.scaleIndex = static_cast<byte>(buffer[1]);
-  return message;
+  message.calibrate.scaleIndex = static_cast<int>(buffer[1]);
 }
 
-Message decode_config_command(const byte* buffer)
+void decode_config_command(const byte* buffer, Message& message)
 {  
-  Message message;
   message.config.scaleIndex = static_cast<byte>(buffer[1]);
   int calibrationMassValue = static_cast<int>(buffer[2]) << 8 | static_cast<int>(buffer[3]);
   message.config.calibrationMass = static_cast<float>(calibrationMassValue) / 100.0;
   message.config.numReadings = static_cast<int>(buffer[4]);
-  return message;
 }
 
 Message decode_message(const byte* buffer)
