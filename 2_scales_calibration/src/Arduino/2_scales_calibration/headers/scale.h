@@ -40,6 +40,6 @@ namespace  arra {
 
         private:
             scale_config config_;
-            HX711 hx711_; 
+            mutable HX711 hx711_; 
     };
 }

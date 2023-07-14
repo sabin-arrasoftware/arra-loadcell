@@ -7,8 +7,11 @@ namespace arra {
     class Serial {
 
     static const int baud = 9600;
+    static const int BUFFER_SIZE = 16;
+    
     public:
-        Serial(HardwareSerial& serial) : serial_(serial){}        
+        Serial(HardwareSerial& serial) : serial_(serial){} 
+        //Serial(Serial_& serial) : serial_(serial){}          
 
         void start() {
             serial_.begin(baud);
@@ -16,25 +19,14 @@ namespace arra {
 
         bool available() {
             return serial_.available();
-        }
-
-        Message handle_serial_data() { 
-            Message message;
-            if (!serial_.available())
-            {
-                reset_message(message);
-            }
-            byte* buffer = get_buffer();
-            message = decode_message(buffer); 
-            return message;
-        } 
+        }        
 
         void write(const String& msg) {
             serial_.println(msg);
         }
 
         byte* get_buffer() {
-            static byte buffer[16]; // Assuming a maximum command length of 16 bytes
+            static byte buffer[BUFFER_SIZE]; // Assuming a maximum command length of 16 bytes
             memset(buffer, 0, sizeof(buffer)); // Clear the command buffer
 
             size_t len = serial_.readBytesUntil('\n', buffer, sizeof(buffer) - 1); // Read command bytes
@@ -75,7 +67,8 @@ namespace arra {
              
 
     private:
-        HardwareSerial& serial_;        
+        HardwareSerial& serial_; 
+        //Serial_& serial_;       
     };
 
 }
@@ -108,3 +101,14 @@ namespace arra {
 //                 write("Unknown Message");
 //             }
 //         }
+
+// Message handle_serial_data() { 
+        //     Message message;
+        //     if (!serial_.available())
+        //     {
+        //         reset_message(message);
+        //     }
+        //     byte* buffer = get_buffer();
+        //     message = decode_message(buffer); 
+        //     return message;
+        // } 
