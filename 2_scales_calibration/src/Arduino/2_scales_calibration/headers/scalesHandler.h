@@ -6,10 +6,13 @@ namespace  arra {
 
     class Scales {   
         public:
-            Scales() {}
+            Scales() : nr_scales_(0) {}
 
             void Calibrate(const byte* buffer) {
                 const int id = static_cast<int>(buffer[1]);
+                if (isNotValidIndex(id)) {
+                    return;
+                }
                 scales_[id].Calibrate();
             }
 
@@ -17,6 +20,9 @@ namespace  arra {
                 Message message;
                 decode_config_command(buffer, message);
                 const int id = message.config.scaleIndex;
+                if (isNotValidIndex(id)) {
+                    return;
+                }
                 scale_config config;
                 config.calibrationMass = message.config.calibrationMass;
                 config.numReadings = message.config.numReadings;
@@ -25,13 +31,24 @@ namespace  arra {
 
             void AddScale(const int pinOut, const int pinSck, const int id) {
                 scales_[id] = Scale(pinOut, pinSck);
+                nr_scales_++;                
             }   
 
             float GetValueFromIndex(const int index) {
+                if (isNotValidIndex(index)) {
+                    return 0.0f;
+                }
                 return scales_[index].GetValue();
-            }         
+            }   
+
+                          
 
         private:
             Scale scales_[15];
+            int nr_scales_;
+
+            bool isNotValidIndex(const int index) {
+                return index < 0 || index >= nr_scales_;
+            }   
     };
 }

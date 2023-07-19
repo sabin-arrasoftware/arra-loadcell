@@ -4,13 +4,16 @@
 namespace arra {
     typedef void (*fn_event)();
 
+    template <class TCmdHandler>
     class Serial {
 
     static const int baud = 9600;
     static const int BUFFER_SIZE = 16;
     
     public:
-        Serial(HardwareSerial& serial) : serial_(serial){} 
+        Serial(HardwareSerial& serial, TCmdHandler& h) 
+        : serial_(serial)
+        , ch_(h){} 
         //Serial(Serial_& serial) : serial_(serial){}          
 
         void start() {
@@ -34,6 +37,17 @@ namespace arra {
 
             return buffer;
         }
+        
+        void processSerialData()
+        {
+            if (available())
+            {
+                ch_.set_buffer(get_buffer());     
+                ch_.get_command_from_buffer();
+                ch_.activate_command();
+            }
+        }
+
 
         void printMessage(const Message& message)    {
                     serial_.print("message.calibrate.scaleIndex: ");
@@ -68,6 +82,8 @@ namespace arra {
 
     private:
         HardwareSerial& serial_; 
+
+        TCmdHandler& ch_;
         //Serial_& serial_;       
     };
 

@@ -1,7 +1,7 @@
 import serial
 
 # Configure the serial port
-port = "/dev/ttyUSB1"  # Replace with the correct port for your system
+port = "/dev/ttyUSB0"  # Replace with the correct port for your system
 baudrate = 9600  # Set the baudrate to match the configuration of your Arduino
 
 # Open the serial port

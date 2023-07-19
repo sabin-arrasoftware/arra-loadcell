@@ -6,36 +6,15 @@
 #include "headers/serial.h"
 
 HardwareSerial& serial = Serial;
-//Serial_& serial = Serial;
-
-arra::Serial rw(serial);
-arra::Scales sh;
 arra::CommandHandler ch;
-
-// void CalibrateCallback(const byte* buffer)
-// {
-//     sh.Calibrate(buffer);
-// }
-
-// void ConfigCallback(const byte* buffer)
-// {
-//     sh.Config(buffer);
-// }
-
-void processSerialData()
-{
-  if (rw.available())
-  {
-    ch.set_buffer(rw.get_buffer());     
-    ch.get_command_from_buffer();
-    ch.activate_command();
-  }
-}
+arra::Serial<arra::CommandHandler> rw(serial, ch);
+arra::Scales sh;
+//Serial_& serial = Serial;
 
 void run() 
 {
   displayScaleValues();
-  processSerialData();
+  rw.processSerialData();
 }
 
 void displayScaleValues()
@@ -49,9 +28,6 @@ void setup()
   sh.AddScale(17, 16, 1);
   ch.add_callback(arra::CALIBRATE, [](const byte* buffer) { sh.Calibrate(buffer); });
   ch.add_callback(arra::CONFIG, [](const byte* buffer) { sh.Config(buffer); });
-
-  // ch.add_callback(arra::CALIBRATE, CalibrateCallback);
-  // ch.add_callback(arra::CONFIG, ConfigCallback);
   rw.start();
 }
 
