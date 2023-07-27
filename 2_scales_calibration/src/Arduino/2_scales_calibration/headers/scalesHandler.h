@@ -41,6 +41,16 @@ namespace  arra {
                 return scales_[index].GetValue();
             }   
 
+            Message getWeightMessage() {
+                Message message;
+                message.weight.numberOfScales = nr_scales_;
+                for (int i = 0; i < nr_scales_; i++) {
+                    message.weight.floatWeight[i] = GetValueFromIndex(i);
+                }
+                return message;
+            }
+
+
                           
 
         private:

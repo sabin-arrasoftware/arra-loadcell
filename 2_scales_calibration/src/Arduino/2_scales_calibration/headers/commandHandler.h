@@ -11,6 +11,7 @@ namespace arra {
             {
                 cmds_[CALIBRATE] = &CommandHandler::handle_calibrate;
                 cmds_[CONFIG] = &CommandHandler::handle_config;
+                cmds_[WEIGHT] = &CommandHandler::handle_weight;
             }
 
             void get_command_from_buffer() {
@@ -46,6 +47,11 @@ namespace arra {
             void handle_config(const byte *buffer)
             {
                 cbs_[CONFIG](buffer);
+            }
+
+            void handle_weight(const byte *buffer)
+            {
+                cbs_[WEIGHT](buffer);
             }
 
             CommandType cmd_;
