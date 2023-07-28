@@ -28,6 +28,7 @@ void setup()
   sh.AddScale(17, 16, 1);
   ch.add_callback(arra::CALIBRATE, [](const byte* buffer) { sh.Calibrate(buffer); });
   ch.add_callback(arra::CONFIG, [](const byte* buffer) { sh.Config(buffer); });
+  // ch.add_callback(arra::WEIGHT, ...)
   rw.start();
 }
 

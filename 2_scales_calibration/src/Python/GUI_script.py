@@ -16,7 +16,7 @@ class Scale:
         self.scale_num = scale_num
         self.values = []
         self.timestamps = []
-        # self.is_displaying = tk.BooleanVar(value=False)
+        self.is_displaying = tk.BooleanVar(value=False)
         self.parent = parent
         self.text = None
 
@@ -90,8 +90,8 @@ class ScaleDisplayApp:
         self.current_display_tab = ttk.Frame(window)
         self.scales = {}
         self.interval = 20
-        # self.calibration_in_progress = False
-        # self.serial_port = serial.Serial("/dev/ttyUSB0", 9600)
+        self.calibration_in_progress = False
+        self.serial_port = serial.Serial("/dev/ttyUSB0", 9600)
 
         self.create_widgets()
 
