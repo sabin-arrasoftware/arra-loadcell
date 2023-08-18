@@ -11,7 +11,6 @@ SPACE_BETWEEN_FRAMES = 10
 NUMBER_OF_SCALES = 2
 
 class Scale:
-    # sa tina datele si metodele legate de fiecare cantar
     def __init__(self, parent, scale_num):
         self.scale_num = scale_num
         self.values = []
@@ -29,10 +28,6 @@ class Scale:
 
     def toggle_display(self):
         self.is_displaying.set(not self.is_displaying.get())
-        if self.is_displaying.get():
-            filename = f"scale{self.scale_num}_values.txt"
-            with open(filename, "a") as file:
-                file.write("-----\n")
 
     def display_value(self, value):
         self.add_value(value)
@@ -84,7 +79,6 @@ class Scale:
 
 
 class ScaleDisplayApp:
-    # Sa se ocupe display-ul datelor
     def __init__(self, window):
         self.window = window
         self.current_display_tab = ttk.Frame(window)
@@ -133,10 +127,7 @@ class ScaleDisplayApp:
     def process_display(self, scale_num):
         if self.scales[scale_num].is_displaying.get():
             values = self.read_serial_values()
-            if values:
-                if self.calibration_in_progress:
-                    self.handle_calibration_messages(values)
-                else:
+            if values and not self.calibration_in_progress:                
                     self.handle_display_values(values, scale_num)
 
         self.window.after(self.interval, lambda: self.process_display(scale_num))
@@ -183,6 +174,7 @@ class ScaleDisplayApp:
         if self.serial_port.in_waiting > 0:
             line = self.serial_port.readline().decode().strip()
             values = line.split(SCALES_VALUES_SEPARATOR)
+            print(values)
             return values
         return None
 
