@@ -5,8 +5,7 @@ from tkinter import messagebox
 MAXIMUM_DISPLAY_LINES = 40
 
 class Scale:
-    def __init__(self, parent, scale_num):
-        self.scale_num = scale_num
+    def __init__(self, parent):
         self.values = []
         self.timestamps = []
         self.is_displaying = tk.BooleanVar(value=False)
@@ -51,7 +50,7 @@ class Scale:
     def send_calibration_command(self):
         if self.scale_num == 1 or self.scale_num == 2:
             # app.calibration_in_progress = True
-            command = bytes([0, self.scale_num -1])
+            command = bytes([0, self.scale_num - 1])
             print("Command: ", command)
 
             message = f"Place known mass on scale {self.scale_num} ..."
