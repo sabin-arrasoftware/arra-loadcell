@@ -11,6 +11,9 @@ class Scale:
         self.is_displaying = tk.BooleanVar(value=False)
         self.parent = parent
         self.text = None
+    
+    def is_displaying(self):
+        return self.is_displaying.get()
 
     def create_text_widget(self, parent):
         self.text = tk.Text(parent, relief="solid", width=self.get_display_frame_width() // 8, height=40)

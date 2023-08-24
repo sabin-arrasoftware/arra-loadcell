@@ -5,8 +5,6 @@ from scales_handler import ScalesHandler
 
 SERIAL_PORT = "/dev/ttyUSB0"
 BAUD_RATE = 9600
-NUMBER_OF_SCALES = 2
-SPACE_BETWEEN_FRAMES = 10
 INTERVAL = 20
 SCALES_VALUES_SEPARATOR = "  "
 
@@ -14,7 +12,7 @@ class Display:
     def __init__(self, window):
         self.window = window
         self.current_display_tab = ttk.Frame(window)
-        self.scales_handler_list = []
+        self.scales_handler = ScalesHandler(self.current_display_tab)
         self.interval = INTERVAL
         self.calibration_in_progress = False
         self.serial_port = serial.Serial(SERIAL_PORT, BAUD_RATE)
@@ -28,27 +26,14 @@ class Display:
 
     def create_current_display_tab(self):
         self.current_display_tab.pack(fill="both", expand=True)
-
-        for scale_num in range(1, NUMBER_OF_SCALES + 1):
-            scale_frame = self.create_scale_frame(scale_num)
-            self.create_scale_widgets(scale_frame, scale_num)      
-        
+        self.scales_handler.handle_scale_frames()  
     
-    def create_scale_frame(self, scale_num):
-        scale_frame = ttk.Frame(self.current_display_tab, width=self.get_display_frame_width())
-        scale_frame.grid(row=1, column=scale_num - 1, padx=SPACE_BETWEEN_FRAMES, pady=10)
-        return scale_frame
-    
-    def create_scale_widgets(self, scale_frame, scale_num):
-        scales_handler = ScalesHandler(scale_frame, scale_num)
-        self.scales_handler_list.append(scales_handler)
-
     def process_display(self):
-        for scales_handler in self.scales_handler_list:
-            if scales_handler.is_displaying():
+        for scale in self.scales_handler.scales:
+            if scale.is_displaying():
                 values = self.read_serial_values()
                 if values and not self.calibration_in_progress:                
-                    scales_handler.handle_display_values(values)
+                    self.scales_handler.handle_display_values(values)
 
         self.window.after(self.interval, self.process_display)
 
