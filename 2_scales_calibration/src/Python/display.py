@@ -12,12 +12,13 @@ class Display:
     def __init__(self, window):
         self.window = window
         self.current_display_tab = ttk.Frame(window)
-        self.scales_handler = ScalesHandler(self.current_display_tab)
+        self.scales_handler = ScalesHandler(self.current_display_tab, self)
         self.interval = INTERVAL
         self.calibration_in_progress = False
         self.serial_port = serial.Serial(SERIAL_PORT, BAUD_RATE)
 
         self.create_widgets()
+        self.current_display_tab.update_idletasks()  # Update the GUI
         self.process_display()
 
     def create_widgets(self):
@@ -27,10 +28,14 @@ class Display:
     def create_current_display_tab(self):
         self.current_display_tab.pack(fill="both", expand=True)
         self.scales_handler.handle_scale_frames()  
+
+        print("Children of current_display_tab:")
+        for child in self.current_display_tab.winfo_children():
+            print(child)
     
     def process_display(self):
         for scale in self.scales_handler.scales:
-            if scale.is_displaying():
+            if scale.is_displaying.get():
                 values = self.read_serial_values()
                 if values and not self.calibration_in_progress:                
                     self.scales_handler.handle_display_values(values)

@@ -3,6 +3,7 @@ from datetime import datetime
 from tkinter import messagebox
 
 MAXIMUM_DISPLAY_LINES = 40
+SPACE_BETWEEN_FRAMES = 10
 
 class Scale:
     def __init__(self, parent):
@@ -11,16 +12,16 @@ class Scale:
         self.is_displaying = tk.BooleanVar(value=False)
         self.parent = parent
         self.text = None
-    
-    def is_displaying(self):
-        return self.is_displaying.get()
 
-    def create_text_widget(self, parent):
-        self.text = tk.Text(parent, relief="solid", width=self.get_display_frame_width() // 8, height=40)
+    def create_text_widget(self):
+        width_ = self.get_display_frame_width() // 8
+        print("Text widget width: ", width_)
+        self.text = tk.Text(self.parent, relief="solid", width=width_, height=40)
         self.text.pack(expand=True, fill="both")
+        print("Created text widget")
 
     def get_display_frame_width(self):
-        return (self.parent.winfo_screenwidth() * 45) // 100
+        return (self.parent.winfo_screenwidth() * 45) // 100  
 
     def toggle_display(self):
         self.is_displaying.set(not self.is_displaying.get())
