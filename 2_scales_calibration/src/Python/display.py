@@ -18,7 +18,6 @@ class Display:
         self.serial_port = serial.Serial(SERIAL_PORT, BAUD_RATE)
 
         self.create_widgets()
-        self.current_display_tab.update_idletasks()  # Update the GUI
         self.process_display()
 
     def create_widgets(self):

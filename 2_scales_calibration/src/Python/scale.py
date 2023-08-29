@@ -6,22 +6,25 @@ MAXIMUM_DISPLAY_LINES = 40
 SPACE_BETWEEN_FRAMES = 10
 
 class Scale:
-    def __init__(self, parent):
+    def __init__(self, scale_frame, scale_num):
         self.values = []
         self.timestamps = []
         self.is_displaying = tk.BooleanVar(value=False)
-        self.parent = parent
+        self.scale_frame = scale_frame
         self.text = None
+        self.scale_num = scale_num
+        self.create_text_widget()
 
     def create_text_widget(self):
         width_ = self.get_display_frame_width() // 8
         print("Text widget width: ", width_)
-        self.text = tk.Text(self.parent, relief="solid", width=width_, height=40)
+        self.text = tk.Text(self.scale_frame, relief="solid", width=width_, height=40)
         self.text.pack(expand=True, fill="both")
         print("Created text widget")
 
     def get_display_frame_width(self):
-        return (self.parent.winfo_screenwidth() * 45) // 100  
+        return (self.scale_frame.winfo_screenwidth() * 45) // 100    
+    
 
     def toggle_display(self):
         self.is_displaying.set(not self.is_displaying.get())
