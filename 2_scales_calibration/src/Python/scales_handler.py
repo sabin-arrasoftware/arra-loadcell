@@ -65,4 +65,5 @@ class ScalesHandler:
     def handle_display_values(self, values):
         if values:
             for scale_num, scale in enumerate(self.scales):
-                scale.display_value(values[scale_num].split(":")[1].strip())
+                if scale.is_displaying.get():
+                    scale.display_value(values[scale_num].split(":")[1].strip())
