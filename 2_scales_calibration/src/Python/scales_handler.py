@@ -7,9 +7,10 @@ SPACE_BETWEEN_FRAMES = 10
 WIDTH = 45
 
 class ScalesHandler:
-    def __init__(self, parent, display_instance):
+    def __init__(self, parent, display_instance, serial_port):
         self.parent = parent
         self.display_instance = display_instance
+        self.serial_port = serial_port
         self.scales = []   
         self.scale_frames = [] 
     
@@ -17,7 +18,7 @@ class ScalesHandler:
         for scale_num in range(1, NUMBER_OF_SCALES + 1):
             scale_frame = self.create_scale_frame(scale_num)
             print("Created scale frame ", scale_num)            
-            scale = self.create_scale(scale_frame, scale_num) 
+            scale = self.create_scale(scale_frame, scale_num, self.serial_port) 
             print("Created scale")
             self.create_checkbox_and_buttons(scale)          
     
@@ -30,8 +31,8 @@ class ScalesHandler:
         self.scale_frames.append(scale_frame)
         return scale_frame
     
-    def create_scale(self, scale_frame, scale_num):
-        scale = Scale(scale_frame, scale_num)
+    def create_scale(self, scale_frame, scale_num, serial_port):
+        scale = Scale(scale_frame, scale_num, serial_port)
         self.scales.append(scale) 
         return scale
     

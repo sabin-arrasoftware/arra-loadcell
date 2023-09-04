@@ -3,16 +3,16 @@ from datetime import datetime
 from tkinter import messagebox
 
 MAXIMUM_DISPLAY_LINES = 40
-SPACE_BETWEEN_FRAMES = 10
 
 class Scale:
-    def __init__(self, scale_frame, scale_num):
+    def __init__(self, scale_frame, scale_num, serial_port):
         self.values = []
         self.timestamps = []
         self.is_displaying = tk.BooleanVar(value=False)
-        self.scale_frame = scale_frame
-        self.text = None
+        self.scale_frame = scale_frame        
         self.scale_num = scale_num
+        self.serial_port = serial_port
+        self.text = None
         self.create_text_widget()
 
     def create_text_widget(self):
@@ -55,24 +55,22 @@ class Scale:
         self.text.delete(1.0, tk.END)
 
     def send_calibration_command(self):
-        if self.scale_num == 1 or self.scale_num == 2:
-            # app.calibration_in_progress = True
-            command = bytes([0, self.scale_num - 1])
-            print("Command: ", command)
+        self.is_displaying.set(False)
+        command = bytes([0, self.scale_num - 1])
+        print("Command: ", command)
 
-            message = f"Place known mass on scale {self.scale_num} ..."
-            response = messagebox.askokcancel("Calibration", message)
+        message = f"Place known mass on scale {self.scale_num} ..."
+        response = messagebox.askokcancel("Calibration", message)
 
-            if response:
-                # app.serial_port.write(command)
-                self.parent.after(100, self.stop_monitoring)
-                # app.calibration_in_progress = False
-            else:
-                print("Calibration canceled")
+        if response:
+            self.serial_port.write(command)
+            # self.parent.after(100, self.stop_monitoring)           
         else:
-            print("Invalid scale number")
+            print("Calibration canceled")
+        
+        self.is_displaying.set(True)
 
     def stop_monitoring(self):
         command = bytes([0, self.scale_num - 1, 0])
-        # app.serial_port.write(command)
+        # self.serial_port.write(command)
         print("Close Monitoring Command sent")

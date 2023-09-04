@@ -11,11 +11,10 @@ SCALES_VALUES_SEPARATOR = "  "
 class Display:
     def __init__(self, window):
         self.window = window
-        self.current_display_tab = ttk.Frame(window)
-        self.scales_handler = ScalesHandler(self.current_display_tab, self)
+        self.current_display_tab = ttk.Frame(window)        
         self.interval = INTERVAL
-        self.calibration_in_progress = False
         self.serial_port = serial.Serial(SERIAL_PORT, BAUD_RATE)
+        self.scales_handler = ScalesHandler(self.current_display_tab, self, self.serial_port)
 
         self.create_widgets()
         self.process_display()
@@ -35,9 +34,8 @@ class Display:
     def process_display(self):
         for scale in self.scales_handler.scales:
             if scale.is_displaying.get():
-                values = self.read_serial_values()
-                if values and not self.calibration_in_progress:                
-                    self.scales_handler.handle_display_values(values)
+                values = self.read_serial_values()                
+                self.scales_handler.handle_display_values(values)
 
         self.window.after(self.interval, self.process_display)
 
@@ -52,7 +50,7 @@ class Display:
         time_interval_label.grid(row=1, column=0, padx=5, pady=5)
 
         self.time_interval_entry = tk.Entry(settings_frame, width=10)
-        self.time_interval_entry.insert(tk.END, "1000")
+        self.time_interval_entry.insert(tk.END, "100")
         self.time_interval_entry.grid(row=1, column=1, padx=5, pady=5)
 
         update_button = tk.Button(settings_frame, text="Update", command=self.update_time_interval)
@@ -61,10 +59,6 @@ class Display:
 
     def get_display_frame_width(self):
         return (self.window.winfo_screenwidth() * 45) // 100
-
-    def handle_calibration_messages(self, values):
-        if values == ['Calling callback']:
-            self.calibration_in_progress = False
 
     def read_serial_values(self):
         if self.serial_port.in_waiting > 0:
