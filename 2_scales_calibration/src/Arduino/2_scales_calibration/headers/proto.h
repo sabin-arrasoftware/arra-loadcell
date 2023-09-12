@@ -2,130 +2,111 @@
 
 namespace arra
 {
+
+const byte BUFFER_SIZE = 16;  
+const byte MAX_NR_SCALES = 4;
+
 enum CommandType
 {
-  CALIBRATE = 0,
-  CONFIG,
-  WEIGHT,
-  LAST
+    CALIBRATE = 0,
+    CONFIG,
+    WEIGHT,
+    LAST
 };
 
-struct CalibrateMessage
+struct Message
 {
-  byte scaleIndex;
+    byte command;                   // Command type
+    byte scaleIndex;
+    float calibrationMass;
+    byte numReadings;
+    byte numberOfScales;
+    float floatWeight[MAX_NR_SCALES];
 };
 
-struct ConfigMessage
+void encode_calibrate_command(const Message& message, byte buffer[BUFFER_SIZE])
 {
-  byte scaleIndex;
-  float calibrationMass;
-  int numReadings;
-};
-
-struct WeightMessage
-{
-  byte numberOfScales;
-  float floatWeight[7];
-};
-
-union Message
-{
-  CalibrateMessage calibrate;
-  ConfigMessage config;
-  WeightMessage weight;
-};
-
-void encode_calibrate_command(const Message& message, byte* buffer)
-{
-  buffer[1] = message.calibrate.scaleIndex;
+    buffer[0] = message.command;
+    buffer[1] = message.scaleIndex;
 }
 
-void encode_config_command(const Message& message, byte* buffer)
+void encode_config_command(const Message& message, byte buffer[BUFFER_SIZE])
 {
-  buffer[1] = message.config.scaleIndex;
-  int calibrationMassInt = static_cast<int>(message.config.calibrationMass * 100);
-  buffer[2] = static_cast<byte>(calibrationMassInt >> 8);     
-  buffer[3] = static_cast<byte>(calibrationMassInt);        
-  buffer[4] = message.config.numReadings;
+    buffer[0] = message.command;
+    buffer[1] = message.scaleIndex;
+    int calibrationMassInt = static_cast<int>(message.calibrationMass * 100);
+    buffer[2] = static_cast<byte>(calibrationMassInt >> 8);
+    buffer[3] = static_cast<byte>(calibrationMassInt);
+    buffer[4] = message.numReadings;
 }
 
-void encode_weight_command(const Message& message, byte* buffer)
+void encode_weight_command(const Message& message, byte buffer[BUFFER_SIZE])
 {
-  buffer[1] = message.weight.numberOfScales;
-  for (byte i = 0; i < message.weight.numberOfScales; i++)
-  {
-    int intWeight = static_cast<int>(message.weight.floatWeight[i] * 100);
-    buffer[2 * i + 2] = static_cast<byte>(intWeight >> 8);  
-    buffer[2 * i + 3] = static_cast<byte>(intWeight);
-  }
+    buffer[0] = message.command;
+    buffer[1] = message.numberOfScales;
+    for (byte i = 0; i < message.numberOfScales; i++)
+    {
+        int intWeight = static_cast<int>(message.floatWeight[i] * 100);
+        buffer[2 * i + 2] = static_cast<byte>(intWeight >> 8);
+        buffer[2 * i + 3] = static_cast<byte>(intWeight);
+    }
 }
 
-byte* encode_message(CommandType command, const Message& message, byte* buffer)
+void encode_message(const Message& message, byte buffer[BUFFER_SIZE])
 {
-  switch (command)
+  switch (message.command)
   {
     case CALIBRATE:
-      buffer[0] = command;
       encode_calibrate_command(message, buffer);
       break;
 
     case CONFIG:
-      buffer[0] = command;
       encode_config_command(message, buffer);
       break;
     
     case WEIGHT:
-      buffer[0] = command;
       encode_weight_command(message, buffer);
 
     default:
       // Unknown command, do not encode any message
       break;
   }
-
-  return buffer;
 }
 
-// Reset a Message object to its default state
 void reset_message(Message& message)
 {
-  message.config.scaleIndex = 255;
-  message.config.calibrationMass = 0.0f;
-  message.config.numReadings = 0;
-  message.weight.numberOfScales = 0;
+    message.command = 0;
 }
 
-void decode_calibrate_command(const byte* buffer, Message& message)
-{  
-  message.calibrate.scaleIndex = static_cast<int>(buffer[1]);
-}
-
-void decode_config_command(const byte* buffer, Message& message)
-{  
-  message.config.scaleIndex = static_cast<byte>(buffer[1]);
-  int calibrationMassValue = static_cast<int>(buffer[2]) << 8 | static_cast<int>(buffer[3]);
-  message.config.calibrationMass = static_cast<float>(calibrationMassValue) / 100.0;
-  message.config.numReadings = static_cast<int>(buffer[4]);
-}
-
-void decode_weight_command(const byte* buffer, Message& message)
+void decode_calibrate_command(const byte buffer[BUFFER_SIZE], Message& message)
 {
-  message.weight.numberOfScales = static_cast<byte>(buffer[1]);
-  for (byte i = 0; i < message.weight.numberOfScales; i++)
-  {
-    int intWeight = static_cast<int>(buffer[2 * i + 2]) << 8 | static_cast<int>(buffer[2 * i + 3]);
-    message.weight.floatWeight[i] = static_cast<float>(intWeight) / 100.0;
-  }
+    message.command = buffer[0];
+    message.scaleIndex = buffer[1];
 }
 
-Message decode_message(const byte* buffer)
+void decode_config_command(const byte buffer[BUFFER_SIZE], Message& message)
 {
-  Message message;
-  reset_message(message);
+    message.command = buffer[0];
+    message.numberOfScales = buffer[1];
+    int calibrationMassValue = static_cast<int>(buffer[2]) << 8 | static_cast<int>(buffer[3]);
+    message.calibrationMass = static_cast<float>(calibrationMassValue) / 100.0;
+    message.numReadings = buffer[4];
+}
 
+void decode_weight_command(const byte buffer[BUFFER_SIZE], Message& message)
+{
+    message.command = buffer[0];
+    message.numberOfScales = buffer[1];
+    for (byte i = 0; i < message.numberOfScales; i++)
+    {
+        int intWeight = static_cast<int>(buffer[2 * i + 2]) << 8 | static_cast<int>(buffer[2 * i + 3]);
+        message.floatWeight[i] = static_cast<float>(intWeight) / 100.0;
+    }
+}
+
+void decode_message(const byte buffer[BUFFER_SIZE], Message& message)
+{
   CommandType command = static_cast<CommandType>(buffer[0]);
-
-  bool success = false;
 
   switch (command)
   {
@@ -144,43 +125,27 @@ Message decode_message(const byte* buffer)
       // Unknown command, do not decode any message
       break;
   }
-
-  if (!success)
-      {
-        // Invalid message
-      }
-
-  return message;
 }
 
+
 bool is_calibrate_message(const Message& message)
-{  
-  return (message.calibrate.scaleIndex != 255 && message.config.numReadings == 0);
+{
+    return (message.command == CALIBRATE);
 }
 
 bool is_config_message(const Message& message)
 {
-  return (message.config.scaleIndex != 255 && message.config.numReadings != 0);
+    return (message.command == CONFIG);
 }
 
 bool is_weight_message(const Message& message)
 {
-  return (message.weight.numberOfScales != 0);
+    return (message.command == WEIGHT);
 }
 
-const CalibrateMessage& get_calibrate_message(const Message& message)
+CommandType getCommandType(const byte buffer[BUFFER_SIZE])
 {
-  return message.calibrate;
-}
-
-const ConfigMessage& get_config_message(const Message& message)
-{
-  return message.config;
-}
-
-const WeightMessage get_weight_message(const Message& message)
-{
-  return message.weight;
+  return CommandType(buffer[0]);
 }
 
 }

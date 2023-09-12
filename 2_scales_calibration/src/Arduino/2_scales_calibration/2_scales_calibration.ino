@@ -17,18 +17,20 @@ void run()
   rw.processSerialData();
 }
 
+
+
 void displayScaleValues()
 {
-  rw.write("Scale_1: " + String(sh.GetValueFromIndex(0)) + "  Scale_2: " + String(sh.GetValueFromIndex(1)));
+  //rw.writeByteBuffer(buffer);
+  //rw.write("Scale_1: " + String(sh.GetValueFromIndex(0)) + "  Scale_2: " + String(sh.GetValueFromIndex(1)));
 }
 
 void setup()
 {
   sh.AddScale(15, 14, 0);
   sh.AddScale(17, 16, 1);
-  ch.add_callback(arra::CALIBRATE, [](const byte* buffer) { sh.Calibrate(buffer); });
-  ch.add_callback(arra::CONFIG, [](const byte* buffer) { sh.Config(buffer); });
-  // ch.add_callback(arra::WEIGHT, ...)
+  ch.add_callback(arra::CALIBRATE, [](const byte buffer[arra::BUFFER_SIZE]) { sh.Calibrate(buffer); });
+  ch.add_callback(arra::CONFIG, [](const byte buffer[arra::BUFFER_SIZE]) { sh.Config(buffer); });
   rw.start();
 }
 
@@ -36,3 +38,23 @@ void loop()
 {
   run();
 }
+
+
+
+
+
+// byte* getByteBuffer()
+// {
+//   arra::WeightMessage weightMessage;
+//   weightMessage.numberOfScales = 2;
+//   for (byte i = 0; i < weightMessage.numberOfScales; ++i)
+//   {
+//     weightMessage.floatWeight[i] = sh.GetValueFromIndex(i);
+//   }
+//   //arra::Message message = static_cast<arra::Message>(weightMessage);
+//   arra::Message message = weightMessage;
+//   byte* buffer;
+//   buffer = arra::encode_message(arra::WEIGHT, message, buffer);
+//   //buffer = arra::encode_message(arra::WEIGHT, weightMessage, buffer);
+//   return buffer;
+// }

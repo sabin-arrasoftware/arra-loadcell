@@ -8,7 +8,7 @@ namespace  arra {
         public:
             Scales() : nr_scales_(0) {}
 
-            void Calibrate(const byte* buffer) {
+            void Calibrate(const byte buffer[16]) {
                 const int id = static_cast<int>(buffer[1]);
                 if (isNotValidIndex(id)) {
                     return;
@@ -16,16 +16,16 @@ namespace  arra {
                 scales_[id].Calibrate();
             }
 
-            void Config(const byte* buffer) {           
+            void Config(const byte buffer[16]) {           
                 Message message;
                 decode_config_command(buffer, message);
-                const int id = message.config.scaleIndex;
+                const int id = message.scaleIndex;
                 if (isNotValidIndex(id)) {
                     return;
                 }
                 scale_config config;
-                config.calibrationMass = message.config.calibrationMass;
-                config.numReadings = message.config.numReadings;
+                config.calibrationMass = message.calibrationMass;
+                config.numReadings = message.numReadings;
                 scales_[id].Config(config);
             }
 
@@ -43,9 +43,9 @@ namespace  arra {
 
             Message getWeightMessage() {
                 Message message;
-                message.weight.numberOfScales = nr_scales_;
+                message.numberOfScales = nr_scales_;
                 for (int i = 0; i < nr_scales_; i++) {
-                    message.weight.floatWeight[i] = GetValueFromIndex(i);
+                    message.floatWeight[i] = GetValueFromIndex(i);
                 }
                 return message;
             }

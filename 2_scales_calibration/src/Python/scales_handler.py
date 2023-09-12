@@ -63,8 +63,23 @@ class ScalesHandler:
         )
         calibrate_button.pack()
 
-    def handle_display_values(self, values):
-        if values:
+    def handle_display_values(self, buffer):
+        if buffer:
+            floatWeights = self.decode_values(buffer)
             for scale_num, scale in enumerate(self.scales):
                 if scale.is_displaying.get():
-                    scale.display_value(values[scale_num].split(":")[1].strip())
+                    scale.display_value(floatWeights[scale_num])
+    
+    # def handle_display_values(self, values):
+    #     if values:
+    #         for scale_num, scale in enumerate(self.scales):
+    #             if scale.is_displaying.get():
+    #                 scale.display_value(values[scale_num].split(":")[1].strip())
+    
+    def decode_values(self, buffer):
+        floatWeights = []
+        number_of_scales = int(buffer[1])
+        for i in range(number_of_scales):
+            int_weight = (buffer[2 * i + 2] << 8) | buffer[2 * i + 3]
+            floatWeights[i] = float(int_weight) / 100.0
+        return floatWeights

@@ -63,7 +63,8 @@ class Display:
     def read_serial_values(self):
         if self.serial_port.in_waiting > 0:
             line = self.serial_port.readline().decode().strip()
-            values = line.split(SCALES_VALUES_SEPARATOR)
+            # values = line.split(SCALES_VALUES_SEPARATOR)
+            values = line
             print(values)
             return values
         return None
