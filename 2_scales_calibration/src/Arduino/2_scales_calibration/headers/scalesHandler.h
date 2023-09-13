@@ -8,7 +8,12 @@ namespace  arra {
         public:
             Scales() : nr_scales_(0) {}
 
-            void Calibrate(const byte buffer[16]) {
+            void Calibrate(const byte buffer[BUFFER_SIZE]) {
+                // Message message;
+                // CalibrateMessage calibrateMessage;
+                // buffer_to_message(buffer, message);
+                // decode_calibrate_command(message, calibrateMessage);
+                // const int id = static_cast<int>(calibrateMessage.scaleIndex);
                 const int id = static_cast<int>(buffer[1]);
                 if (isNotValidIndex(id)) {
                     return;
@@ -16,16 +21,18 @@ namespace  arra {
                 scales_[id].Calibrate();
             }
 
-            void Config(const byte buffer[16]) {           
+            void Config(const byte buffer[BUFFER_SIZE]) {           
                 Message message;
-                decode_config_command(buffer, message);
-                const int id = message.scaleIndex;
+                ConfigMessage configMessage;
+                buffer_to_message(buffer, message);
+                decode_config_command(message, configMessage);
+                const int id = configMessage.scaleIndex;
                 if (isNotValidIndex(id)) {
                     return;
                 }
                 scale_config config;
-                config.calibrationMass = message.calibrationMass;
-                config.numReadings = message.numReadings;
+                config.calibrationMass = configMessage.calibrationMass;
+                config.numReadings = configMessage.numReadings;
                 scales_[id].Config(config);
             }
 
@@ -43,10 +50,12 @@ namespace  arra {
 
             Message getWeightMessage() {
                 Message message;
-                message.numberOfScales = nr_scales_;
+                WeightMessage weightMessage;
+                weightMessage.numberOfScales = nr_scales_;
                 for (int i = 0; i < nr_scales_; i++) {
-                    message.floatWeight[i] = GetValueFromIndex(i);
+                    weightMessage.floatWeight[i] = GetValueFromIndex(i);
                 }
+                encode_weight_command(weightMessage, message);
                 return message;
             }
 
@@ -56,7 +65,7 @@ namespace  arra {
                           
 
         private:
-            Scale scales_[15];
+            Scale scales_[MAX_NR_SCALES];
             int nr_scales_;
 
             bool isNotValidIndex(const int index) {
