@@ -8,24 +8,22 @@ namespace  arra {
         public:
             Scales() : nr_scales_(0) {}
 
-            void Calibrate(const byte buffer[BUFFER_SIZE]) {
+            void Calibrate(const Buffer& buffer) {
                 // Message message;
                 // CalibrateMessage calibrateMessage;
                 // buffer_to_message(buffer, message);
                 // decode_calibrate_command(message, calibrateMessage);
                 // const int id = static_cast<int>(calibrateMessage.scaleIndex);
-                const int id = static_cast<int>(buffer[1]);
+                const int id = static_cast<int>(buffer.payload[1]);
                 if (isNotValidIndex(id)) {
                     return;
                 }
                 scales_[id].Calibrate();
             }
 
-            void Config(const byte buffer[BUFFER_SIZE]) {           
-                Message message;
+            void Config(const Buffer& buffer) {           
                 ConfigMessage configMessage;
-                buffer_to_message(buffer, message);
-                decode_config_command(message, configMessage);
+                decode_config_command(buffer, configMessage);
                 const int id = configMessage.scaleIndex;
                 if (isNotValidIndex(id)) {
                     return;
@@ -48,15 +46,15 @@ namespace  arra {
                 return scales_[index].GetValue();
             }   
 
-            Message getWeightMessage() {
-                Message message;
+            Buffer getWeightMessage() {
+                Buffer buffer;
                 WeightMessage weightMessage;
                 weightMessage.numberOfScales = nr_scales_;
                 for (int i = 0; i < nr_scales_; i++) {
                     weightMessage.floatWeight[i] = GetValueFromIndex(i);
                 }
-                encode_weight_command(weightMessage, message);
-                return message;
+                encode_weight_command(weightMessage, buffer);
+                return buffer;
             }
 
             

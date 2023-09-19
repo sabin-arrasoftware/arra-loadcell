@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 //#include <HX711.h>
 //#include <Arduino.h>
 #include "headers/scalesHandler.h"
@@ -21,16 +21,18 @@ void run()
 
 void displayScaleValues()
 {
-  //rw.writeByteBuffer(buffer);
-  //rw.write("Scale_1: " + String(sh.GetValueFromIndex(0)) + "  Scale_2: " + String(sh.GetValueFromIndex(1)));
+  arra::Buffer buffer = sh.getWeightMessage();
+  rw.writeBuffer(buffer);
+  //rw.writeBuffer(buffer);
+  // rw.write("Scale_1: " + String(sh.GetValueFromIndex(0)) + "  Scale_2: " + String(sh.GetValueFromIndex(1)));
 }
 
 void setup()
 {
   sh.AddScale(15, 14, 0);
   sh.AddScale(17, 16, 1);
-  ch.add_callback(arra::CALIBRATE, [](const byte buffer[arra::BUFFER_SIZE]) { sh.Calibrate(buffer); });
-  ch.add_callback(arra::CONFIG, [](const byte buffer[arra::BUFFER_SIZE]) { sh.Config(buffer); });
+  ch.add_callback(arra::CALIBRATE, [](const arra::Buffer& buffer) { sh.Calibrate(buffer); });
+  ch.add_callback(arra::CONFIG, [](const arra::Buffer& buffer) { sh.Config(buffer); });
   rw.start();
 }
 

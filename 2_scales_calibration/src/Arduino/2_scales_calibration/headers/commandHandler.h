@@ -5,8 +5,11 @@ namespace arra {
 
     class CommandHandler {
         public:
-            typedef void (CommandHandler::*CommandFun)(const byte *);
-            typedef void (*CallbackFun)(const byte *);        
+            // typedef void (CommandHandler::*CommandFun)(const byte *);
+            // typedef void (*CallbackFun)(const byte *);   
+
+            typedef void (CommandHandler::*CommandFun)(const Buffer&);
+            typedef void (*CallbackFun)(const Buffer&);     
 
             CommandHandler()
             {
@@ -15,16 +18,24 @@ namespace arra {
                 cmds_[WEIGHT] = &CommandHandler::handle_weight;
             }
 
+            // void get_command_from_buffer() {
+            //     cmd_ = static_cast<CommandType>(buffer_[0]);
+            // }   
+
             void get_command_from_buffer() {
-                cmd_ = static_cast<CommandType>(buffer_[0]);
-            }            
+                cmd_ = static_cast<CommandType>(buffer_.payload[0]);
+            }         
 
             void add_callback(CommandType t, CallbackFun cb)
             {
                 cbs_[t] = cb;
             }
 
-            void set_buffer(byte* buffer) {
+            // void set_buffer(byte* buffer) {
+            //     buffer_ = buffer;
+            // }
+
+            void set_buffer(Buffer& buffer) {
                 buffer_ = buffer;
             }
 
@@ -39,18 +50,33 @@ namespace arra {
 
         private:
             // Command execution methods
-            void handle_calibrate(const byte *buffer)
+            // void handle_calibrate(const byte *buffer)
+            // {
+            //     cbs_[CALIBRATE](buffer);
+            // }
+            
+
+            // void handle_config(const byte *buffer)
+            // {
+            //     cbs_[CONFIG](buffer);
+            // }
+
+            // void handle_weight(const byte *buffer)
+            // {
+            //     cbs_[WEIGHT](buffer);
+            // }
+
+            void handle_calibrate(const Buffer& buffer)
             {
                 cbs_[CALIBRATE](buffer);
             }
-            
 
-            void handle_config(const byte *buffer)
+            void handle_config(const Buffer& buffer)
             {
                 cbs_[CONFIG](buffer);
             }
 
-            void handle_weight(const byte *buffer)
+            void handle_weight(const Buffer& buffer)
             {
                 cbs_[WEIGHT](buffer);
             }
@@ -61,7 +87,9 @@ namespace arra {
 
             CallbackFun cbs_[LAST];
 
-            byte* buffer_;                   
+            //byte* buffer_;  
+
+            Buffer buffer_;                 
         };
 }
 

@@ -28,25 +28,29 @@ namespace arra {
             serial_.println(msg);
         }
 
-        void writeByteBuffer(const byte buffer[BUFFER_SIZE]) {
-            serial_.println(buffer);
+        void writeBuffer(const Buffer& buffer) {
+            String bufferString = buffer.toString();
+            serial_.println(bufferString);
         }
 
-        // byte* get_buffer() {
-        //     static byte buffer[BUFFER_SIZE]; // Assuming a maximum command length of 16 bytes
-        //     memset(buffer, 0, sizeof(buffer)); // Clear the command buffer
+        Buffer get_buffer() {
+            Buffer buffer; // Assuming a maximum command length of 16 bytes
+            memset(buffer.payload, 0, sizeof(buffer.payload)); // Clear the command buffer
 
-        //     size_t len = serial_.readBytesUntil('\n', buffer, sizeof(buffer) - 1); // Read command bytes
-        //     buffer[len] = '\0'; // Null-terminate the command buffer
+            size_t len = serial_.readBytesUntil('\n', buffer.payload, sizeof(buffer.payload) - 1); // Read command bytes
+            buffer.payload[len] = '\0'; // Null-terminate the command buffer
 
-        //     return buffer;
-        // }
+            return buffer;
+        }
+
         
         void processSerialData()
         {
+            Buffer buffer;
             if (available())
             {
-                ch_.set_buffer(get_buffer());     
+                buffer = get_buffer();
+                ch_.set_buffer(buffer);     
                 ch_.get_command_from_buffer();
                 ch_.activate_command();
             }
