@@ -63,23 +63,36 @@ class ScalesHandler:
         )
         calibrate_button.pack()
 
-    def handle_display_values(self, buffer):
-        if buffer:
-            floatWeights = self.decode_values(buffer)
-            for scale_num, scale in enumerate(self.scales):
-                if scale.is_displaying.get():
-                    scale.display_value(floatWeights[scale_num])
+    def handle_display_values(self, input_string):
+        if input_string:
+            numbers_as_strings = input_string.split()
+            buffer = bytearray([int(num) for num in numbers_as_strings])
+            print("Buffer: ", buffer)
+            if buffer and self.is_weight_message(buffer):
+                floatWeights = self.decode_values(buffer)
+                for scale_num, scale in enumerate(self.scales):
+                    if scale.is_displaying.get():
+                        scale.display_value(floatWeights[scale_num])  
     
+    def decode_values(self, buffer):
+        floatWeights = []
+        number_of_scales = int(buffer[1])
+        print("nr scales: ", number_of_scales)
+        for i in range(number_of_scales):
+            int_weight = (buffer[2 * i + 2] << 8) | buffer[2 * i + 3]
+            print("int_weight ", i, ": ", int_weight)
+            floatWeights.append(float(int_weight) / 100.0)
+            print("float_weight ", i, ": ", floatWeights[i])
+        return floatWeights
+
+    def is_weight_message(self, buffer):
+        print("Int(buffer[0]): ", int(buffer[0]))
+        return int(buffer[0]) == 2
+    
+
+
     # def handle_display_values(self, values):
     #     if values:
     #         for scale_num, scale in enumerate(self.scales):
     #             if scale.is_displaying.get():
     #                 scale.display_value(values[scale_num].split(":")[1].strip())
-    
-    def decode_values(self, buffer):
-        floatWeights = []
-        number_of_scales = int(buffer[1])
-        for i in range(number_of_scales):
-            int_weight = (buffer[2 * i + 2] << 8) | buffer[2 * i + 3]
-            floatWeights[i] = float(int_weight) / 100.0
-        return floatWeights

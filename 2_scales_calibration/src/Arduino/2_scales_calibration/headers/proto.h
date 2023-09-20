@@ -21,7 +21,7 @@ struct Buffer
     String toString() const {
         String result = "";
         for (int i = 0; i < BUFFER_SIZE; ++i) {
-            result += char(payload[i]);
+            result += String(int(payload[i])) + " ";
         }
         return result;
     }

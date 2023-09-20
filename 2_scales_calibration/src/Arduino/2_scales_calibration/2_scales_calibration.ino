@@ -17,14 +17,10 @@ void run()
   rw.processSerialData();
 }
 
-
-
 void displayScaleValues()
 {
   arra::Buffer buffer = sh.getWeightMessage();
   rw.writeBuffer(buffer);
-  //rw.writeBuffer(buffer);
-  // rw.write("Scale_1: " + String(sh.GetValueFromIndex(0)) + "  Scale_2: " + String(sh.GetValueFromIndex(1)));
 }
 
 void setup()
@@ -33,6 +29,7 @@ void setup()
   sh.AddScale(17, 16, 1);
   ch.add_callback(arra::CALIBRATE, [](const arra::Buffer& buffer) { sh.Calibrate(buffer); });
   ch.add_callback(arra::CONFIG, [](const arra::Buffer& buffer) { sh.Config(buffer); });
+  ch.add_callback(arra::WEIGHT, [](const arra::Buffer& buffer) { sh.Weight(buffer); });
   rw.start();
 }
 

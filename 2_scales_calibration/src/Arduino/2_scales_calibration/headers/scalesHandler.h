@@ -34,6 +34,10 @@ namespace  arra {
                 scales_[id].Config(config);
             }
 
+            void Weight(const Buffer& buffer) {
+                
+            }
+
             void AddScale(const int pinOut, const int pinSck, const int id) {
                 scales_[id] = Scale(pinOut, pinSck);
                 nr_scales_++;                
