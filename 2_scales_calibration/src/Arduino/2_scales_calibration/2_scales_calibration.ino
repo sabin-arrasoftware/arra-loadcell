@@ -14,7 +14,7 @@ arra::Scales sh;
 void run() 
 {
   displayScaleValues();
-  rw.processSerialData();
+  rw.processSerialData();  
 }
 
 void displayScaleValues()
@@ -25,8 +25,7 @@ void displayScaleValues()
 
 void setup()
 {
-  sh.AddScale(15, 14, 0);
-  sh.AddScale(17, 16, 1);
+  sh.AddDoubleScale(15, 14, 17, 16, 0);
   ch.add_callback(arra::CALIBRATE, [](const arra::Buffer& buffer) { sh.Calibrate(buffer); });
   ch.add_callback(arra::CONFIG, [](const arra::Buffer& buffer) { sh.Config(buffer); });
   ch.add_callback(arra::WEIGHT, [](const arra::Buffer& buffer) { sh.Weight(buffer); });

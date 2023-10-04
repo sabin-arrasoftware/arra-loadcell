@@ -38,8 +38,8 @@ namespace  arra {
                 
             }
 
-            void AddScale(const int pinOut, const int pinSck, const int id) {
-                scales_[id] = Scale(pinOut, pinSck);
+            void AddDoubleScale(const int pinOut0, const int pinSck0, const int pinOut1, const int pinSck1, const int id) {
+                scales_[id] = DoubleScale(pinOut0, pinSck0, pinOut1, pinSck1);
                 nr_scales_++;                
             }   
 
@@ -47,7 +47,7 @@ namespace  arra {
                 if (isNotValidIndex(index)) {
                     return 0.0f;
                 }
-                return scales_[index].GetValue();
+                return scales_[index].ShowValue();
             }   
 
             Buffer getWeightMessage() {
@@ -62,12 +62,13 @@ namespace  arra {
             }
 
             
+            
 
 
                           
 
         private:
-            Scale scales_[MAX_NR_SCALES];
+            DoubleScale scales_[MAX_NR_SCALES];
             int nr_scales_;
 
             bool isNotValidIndex(const int index) {

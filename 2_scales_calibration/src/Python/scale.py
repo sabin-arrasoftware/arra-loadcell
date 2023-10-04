@@ -59,7 +59,8 @@ class Scale:
         command = bytes([0, self.scale_num - 1])
         print("Command: ", command)
 
-        message = f"Place known mass on scale {self.scale_num} ..."
+        #message = f"Place known mass on scale {self.scale_num} ..."
+        message = f"Place known mass on each scale..."
         response = messagebox.askokcancel("Calibration", message)
 
         if response:

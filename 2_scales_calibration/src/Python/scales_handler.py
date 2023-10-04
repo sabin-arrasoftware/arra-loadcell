@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from scale import Scale
 
-NUMBER_OF_SCALES = 2
+NUMBER_OF_SCALES = 1
 SPACE_BETWEEN_FRAMES = 10
 WIDTH = 45
 
