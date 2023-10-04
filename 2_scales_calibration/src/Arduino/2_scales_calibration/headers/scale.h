@@ -1,6 +1,8 @@
 
 #pragma once
 #include <HX711.h>
+// #include <iostream>
+// #include <vector>
 
 
 namespace  arra {
@@ -78,11 +80,11 @@ namespace  arra {
             }            
 
             bool isDrifting() {
-                checkPercentageChange(initialValue_, driftingThresholdPercentage_);
+                return checkPercentageChange(initialValue_, driftingThresholdPercentage_);
             }
 
             bool conditionToCalibrate() {
-                checkPercentageChange(previousValue_, calibrationThresholdPercentage_);
+                return checkPercentageChange(previousValue_, calibrationThresholdPercentage_);
             }
 
             float ShowValue() {
