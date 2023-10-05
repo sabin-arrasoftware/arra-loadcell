@@ -109,7 +109,7 @@ namespace  arra {
         private:
             Scale scale0_, scale1_;
             float initialValue_, previousValue_, currentValue_;
-            float driftingThresholdPercentage_ = 1.0, calibrationThresholdPercentage_ = 0.5;
+            float driftingThresholdPercentage_ = 0.5, calibrationThresholdPercentage_ = 0.3;
         
             bool checkPercentageChange(const float& referenceValue, const float& thresholdPercentage) {
                 float percentageChange = ((currentValue_ - referenceValue) / referenceValue) * 100.0;

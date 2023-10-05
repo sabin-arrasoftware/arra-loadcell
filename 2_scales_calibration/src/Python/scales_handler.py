@@ -37,31 +37,44 @@ class ScalesHandler:
         return scale
     
     def create_checkbox_and_buttons(self, scale):
-        self.create_scale_checkbox(scale)
+        self.create_start_stop_button(scale)
         self.create_clear_button(scale)
         self.create_calibrate_button(scale)  
     
-
-    def create_scale_checkbox(self, scale):
+    def create_start_stop_button(self, scale):
         index = scale.scale_num - 1
-        scale_checkbox = tk.Checkbutton(
-            self.scale_frames[index], text=f"Display Scale {scale.scale_num}", variable=self.scales[index].is_displaying.get,
-            command=self.scales[index].toggle_display
+        button_text = "Start Measurements"  # Initial text
+        start_stop_button = tk.Button(
+            self.scale_frames[index], text=button_text, command=lambda: self.toggle_button_action(scale)
         )
-        scale_checkbox.pack(side="top", padx=SPACE_BETWEEN_FRAMES, pady=10)
-        self.scales[index].is_displaying.set(False)
+        start_stop_button.pack(side="left")
+        
+        # Store the button and its initial text in the scale object
+        scale.start_stop_button = start_stop_button
+        scale.button_text = button_text
     
+    def toggle_button_action(self, scale):
+        if scale.button_text == "Start Measurements":
+            scale.toggle_display()
+            scale.button_text = "Stop Measurements"
+        else:
+            scale.toggle_display()
+            scale.button_text = "Start Measurements"
+
+        # Update the button text
+        scale.start_stop_button.config(text=scale.button_text)
+
     def create_clear_button(self, scale):
         index = scale.scale_num - 1 
         clear_button = tk.Button(self.scale_frames[index], text="Clear", command=self.scales[index].clear_values)
-        clear_button.pack()
+        clear_button.pack(side="left")
 
     def create_calibrate_button(self, scale):
         index = scale.scale_num - 1
         calibrate_button = tk.Button(
             self.scale_frames[index], text="Calibrate", command=self.scales[index].send_calibration_command
         )
-        calibrate_button.pack()
+        calibrate_button.pack(side="left")
 
     def handle_display_values(self, input_string):
         if input_string:
@@ -88,11 +101,3 @@ class ScalesHandler:
     def is_weight_message(self, buffer):
         print("Int(buffer[0]): ", int(buffer[0]))
         return int(buffer[0]) == 2
-    
-
-
-    # def handle_display_values(self, values):
-    #     if values:
-    #         for scale_num, scale in enumerate(self.scales):
-    #             if scale.is_displaying.get():
-    #                 scale.display_value(values[scale_num].split(":")[1].strip())

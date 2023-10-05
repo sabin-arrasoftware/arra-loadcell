@@ -13,6 +13,8 @@ class Scale:
         self.scale_num = scale_num
         self.serial_port = serial_port
         self.text = None
+        self.start_stop_button = None
+        self.button_text = None
         self.create_text_widget()
 
     def create_text_widget(self):
