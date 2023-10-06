@@ -34,8 +34,8 @@ namespace  arra {
                 scales_[id].Config(config);
             }
 
-            void Weight(const Buffer& buffer) {
-                
+
+            void Weight(const Buffer& buffer) {                
             }
 
             void AddDoubleScale(const int pinOut0, const int pinSck0, const int pinOut1, const int pinSck1, const int id) {
@@ -59,13 +59,7 @@ namespace  arra {
                 }
                 encode_weight_command(weightMessage, buffer);
                 return buffer;
-            }
-
-            
-            
-
-
-                          
+            }             
 
         private:
             DoubleScale scales_[MAX_NR_SCALES];

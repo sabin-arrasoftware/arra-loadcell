@@ -13,11 +13,23 @@ class Display:
         self.window = window
         self.current_display_tab = ttk.Frame(window)        
         self.interval = INTERVAL
+
         self.serial_port = serial.Serial(SERIAL_PORT, BAUD_RATE)
+
         self.scales_handler = ScalesHandler(self.current_display_tab, self, self.serial_port)
+
+        # Bind the cleanup method to the window close event
+        window.protocol("WM_DELETE_WINDOW", self.cleanup)
+
 
         self.create_widgets()
         self.process_display()
+    
+    def cleanup(self):
+        # This method is called when the window is closed
+        if self.serial_port:
+            self.serial_port.close()
+        self.window.destroy()  # Close the GUI window
 
     def create_widgets(self):
         self.create_current_display_tab()
@@ -40,21 +52,36 @@ class Display:
         self.window.after(self.interval, self.process_display)
 
     def create_settings_section(self):
+       
         settings_frame = ttk.Frame(self.current_display_tab)
         settings_frame.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
         settings_label = tk.Label(settings_frame, text="Settings", font=("Arial", 12))
         settings_label.grid(row=0, column=0, columnspan=3, padx=5, pady=5)
 
+
+         # FRAME TIME INTERVAL
         time_interval_label = tk.Label(settings_frame, text="Time Interval (ms):")
         time_interval_label.grid(row=1, column=0, padx=5, pady=5)
 
         self.time_interval_entry = tk.Entry(settings_frame, width=10)
-        self.time_interval_entry.insert(tk.END, "100")
+        self.time_interval_entry.insert(tk.END, self.interval)
         self.time_interval_entry.grid(row=1, column=1, padx=5, pady=5)
 
         update_button = tk.Button(settings_frame, text="Update", command=self.update_time_interval)
         update_button.grid(row=1, column=2, padx=5, pady=5)
+
+        # FRAME CALIBRATE
+        # calibrate_label = tk.Label(settings_frame, text="Calibrate (g):")
+        # calibrate_label.grid(row=2, column=0, padx=5, pady=5)
+
+        # self.calibrate_entry = tk.Entry(settings_frame, width=10)
+        # self.calibrate_entry.insert(tk.END, self.calibrate)
+        # self.calibrate_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        # update_button = tk.Button(settings_frame, text="Update", command=self.update_calibrate)
+        # update_button.grid(row=2, column=2, padx=5, pady=5)
+        
 
 
     def get_display_frame_width(self):
@@ -68,6 +95,11 @@ class Display:
             print(values)
             return values
         return None
+
+
+    # def update_calibrate(self):
+    #     new_calibrate = self.calibrate_entry.get()
+    #     self.calibrate = float(new_calibrate)
 
     def update_time_interval(self):
         new_interval = self.time_interval_entry.get()

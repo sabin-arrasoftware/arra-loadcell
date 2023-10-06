@@ -57,7 +57,11 @@ class Scale:
         self.text.delete(1.0, tk.END)
 
     def send_calibration_command(self):
-        self.is_displaying.set(False)
+        was_displaying = False
+        if self.is_displaying.get():
+            was_displaying = True
+            self.is_displaying.set(False)
+
         command = bytes([0, self.scale_num - 1])
         print("Command: ", command)
 
@@ -71,7 +75,8 @@ class Scale:
         else:
             print("Calibration canceled")
         
-        self.is_displaying.set(True)
+        if was_displaying:
+            self.is_displaying.set(True)
 
     def stop_monitoring(self):
         command = bytes([0, self.scale_num - 1, 0])

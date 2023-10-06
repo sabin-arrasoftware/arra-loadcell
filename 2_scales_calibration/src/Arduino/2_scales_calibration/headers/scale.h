@@ -6,7 +6,7 @@
 
 
 namespace  arra {
-    //config
+     //config
     struct scale_config {
         float calibrationMass = 6.1;
         int numReadings = 10;
@@ -21,7 +21,7 @@ namespace  arra {
                 hx711_.tare();                
             }
 
-            void Config(const scale_config& config) {
+             void Config(const scale_config& config) {
                 config_ = config;
             }
 
@@ -42,13 +42,9 @@ namespace  arra {
                 return hx711_.get_units();
             }
 
-            
-
         private:
             scale_config config_;
-            mutable HX711 hx711_; 
-            
-            
+            mutable HX711 hx711_;           
     };
 
     class DoubleScale {
@@ -60,6 +56,7 @@ namespace  arra {
                 initialValue_ = GetValue();
                 currentValue_ = initialValue_;
             }
+
 
             void Config(const scale_config& config) {
                 scale0_.Config(config);
@@ -95,9 +92,9 @@ namespace  arra {
                     return initialValue_;
                 }
 
-                if (conditionToCalibrate()) {
-                    Calibrate();
-                }
+                // if (conditionToCalibrate()) {
+                //     Calibrate();
+                // }
                 
                 return currentValue_;
             }

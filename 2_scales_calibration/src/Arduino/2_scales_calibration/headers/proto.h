@@ -30,6 +30,7 @@ struct Buffer
 struct CalibrateMessage
 {
     byte scaleIndex;
+    float calibrationMass;
 };
 
 struct ConfigMessage
@@ -38,6 +39,7 @@ struct ConfigMessage
     float calibrationMass;
     byte numReadings;
 };
+
 
 struct WeightMessage
 {   

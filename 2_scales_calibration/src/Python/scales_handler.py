@@ -20,7 +20,7 @@ class ScalesHandler:
             print("Created scale frame ", scale_num)            
             scale = self.create_scale(scale_frame, scale_num, self.serial_port) 
             print("Created scale")
-            self.create_checkbox_and_buttons(scale)          
+            self.create_buttons(scale)          
     
     
     def create_scale_frame(self, scale_num):
@@ -36,7 +36,7 @@ class ScalesHandler:
         self.scales.append(scale) 
         return scale
     
-    def create_checkbox_and_buttons(self, scale):
+    def create_buttons(self, scale):
         self.create_start_stop_button(scale)
         self.create_clear_button(scale)
         self.create_calibrate_button(scale)  
@@ -55,10 +55,10 @@ class ScalesHandler:
     
     def toggle_button_action(self, scale):
         if scale.button_text == "Start Measurements":
-            scale.toggle_display()
+            scale.is_displaying.set(True)
             scale.button_text = "Stop Measurements"
         else:
-            scale.toggle_display()
+            scale.is_displaying.set(False)
             scale.button_text = "Start Measurements"
 
         # Update the button text
