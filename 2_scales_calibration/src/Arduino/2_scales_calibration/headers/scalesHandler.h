@@ -1,72 +1,53 @@
 #pragma once
-#include "scale.h"
 #include "proto.h"
 
 namespace  arra {
 
-    class Scales {   
-        public:
-            Scales() : nr_scales_(0) {}
+template <class Scale>
+class ScalesHandler {
 
-            void Calibrate(const Buffer& buffer) {
-                // Message message;
-                // CalibrateMessage calibrateMessage;
-                // buffer_to_message(buffer, message);
-                // decode_calibrate_command(message, calibrateMessage);
-                // const int id = static_cast<int>(calibrateMessage.scaleIndex);
-                const int id = static_cast<int>(buffer.payload[1]);
-                if (isNotValidIndex(id)) {
-                    return;
-                }
-                scales_[id].Calibrate();
-            }
+public:
+    ScalesHandler() : nr_scales_(0) {};
 
-            void Config(const Buffer& buffer) {           
-                ConfigMessage configMessage;
-                decode_config_command(buffer, configMessage);
-                const int id = configMessage.scaleIndex;
-                if (isNotValidIndex(id)) {
-                    return;
-                }
-                scale_config config;
-                config.calibrationMass = configMessage.calibrationMass;
-                config.numReadings = configMessage.numReadings;
-                scales_[id].Config(config);
-            }
+    void Calibrate(const Buffer& buf) {
+        const CalibrateMessage msg; 
+        msg.fromBuffer(buf);
+        
+        if (isNotValidIndex(msg.scaleIndex_)) {
+            return;
+        }
+        scales_[msg.scaleIndex_].Calibrate(msg.calibrationMass_);
+    }
 
+    void AddScale(const Scale& scale) {
+        scales_[nr_scales_] = scale;
+        nr_scales_++;                
+    }   
 
-            void Weight(const Buffer& buffer) {                
-            }
+    float GetValueFromIndex(const int index) {
+        if (isNotValidIndex(index)) {
+            return 0.0f;
+        }
+        return scales_[index].GetValue();
+    }   
 
-            void AddDoubleScale(const int pinOut0, const int pinSck0, const int pinOut1, const int pinSck1, const int id) {
-                scales_[id] = DoubleScale(pinOut0, pinSck0, pinOut1, pinSck1);
-                nr_scales_++;                
-            }   
+    Buffer getWeightMessage() {
+        WeightMessage weightMessage;
+        weightMessage.numberOfScales_ = nr_scales_;
+        for (int i = 0; i < nr_scales_; ++i) {
+            weightMessage.floatWeight_[i] = GetValueFromIndex(i);
+        }
+        return weightMessage.toBuffer()
+    }
 
-            float GetValueFromIndex(const int index) {
-                if (isNotValidIndex(index)) {
-                    return 0.0f;
-                }
-                return scales_[index].ShowValue();
-            }   
+private:
+    bool isNotValidIndex(const int index) {
+        return index < 0 || index >= nr_scales_;
+    }   
 
-            Buffer getWeightMessage() {
-                Buffer buffer;
-                WeightMessage weightMessage;
-                weightMessage.numberOfScales = nr_scales_;
-                for (int i = 0; i < nr_scales_; i++) {
-                    weightMessage.floatWeight[i] = GetValueFromIndex(i);
-                }
-                encode_weight_command(weightMessage, buffer);
-                return buffer;
-            }             
+private:
+    Scales scales_[MAX_NR_SCALES];
+    int nr_scales_;
+};
 
-        private:
-            DoubleScale scales_[MAX_NR_SCALES];
-            int nr_scales_;
-
-            bool isNotValidIndex(const int index) {
-                return index < 0 || index >= nr_scales_;
-            }   
-    };
 }

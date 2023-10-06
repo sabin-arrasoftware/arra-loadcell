@@ -1,116 +1,64 @@
 
 #pragma once
-#include <HX711.h>
-// #include <iostream>
-// #include <vector>
-
 
 namespace  arra {
-     //config
-    struct scale_config {
-        float calibrationMass = 6.1;
-        int numReadings = 10;
-    };
 
-    class Scale {   
-        public:
-            Scale() = default; // Default constructor
+template<class TAdapter>
+class Scale {
+public:
+    Scale(TAdapter& first, TAdapter& second) : first_(first), second_(second){}
 
-            Scale(const int& dout, const int& sck) {
-                hx711_.begin(dout, sck);
-                hx711_.tare();                
-            }
+    void Calibrate(const float calibrationMass) {
+        first_.Calibrate(calibrationMass);
+        second_.Calibrate(calibrationMass);
+        real_ = calibrationMass;
+    }
 
-             void Config(const scale_config& config) {
-                config_ = config;
-            }
+    float GetValue() const {
+        val = get_value();
 
-            void Calibrate() {
-              // Calculate average for numReadings
-                float scale_weight = 0.0;
-                for (int i = 0; i < config_.numReadings; ++i) {
-                    scale_weight += hx711_.get_value();
-                }
-                scale_weight /= config_.numReadings;
+        check_drifting(val);
+        check_calibrate(val);
 
-                float calibrationFactor = scale_weight / config_.calibrationMass;
-                hx711_.set_scale(calibrationFactor);
-                
-            }
+        return real_;
+    }
 
-            float GetValue() const {
-                return hx711_.get_units();
-            }
+private:
 
-        private:
-            scale_config config_;
-            mutable HX711 hx711_;           
-    };
-
-    class DoubleScale {
-        public:
-            DoubleScale() = default; // Default constructor
-
-            DoubleScale(const int& dout0, const int& sck0, const int& dout1, const int& sck1)
-                : scale0_(dout0, sck0), scale1_(dout1, sck1) {
-                initialValue_ = GetValue();
-                currentValue_ = initialValue_;
-            }
-
-
-            void Config(const scale_config& config) {
-                scale0_.Config(config);
-                scale1_.Config(config);
-                initialValue_ = GetValue();
-                currentValue_ = initialValue_;
-            }
-
-            void Calibrate() {
-                scale0_.Calibrate();
-                scale1_.Calibrate();
-                initialValue_ = GetValue();
-                currentValue_ = initialValue_;
-            }
-
-            float GetValue() const {
-                return (scale0_.GetValue() + scale1_.GetValue()) / 2.0;
-            }            
-
-            bool isDrifting() {
-                return checkPercentageChange(initialValue_, driftingThresholdPercentage_);
-            }
-
-            bool conditionToCalibrate() {
-                return checkPercentageChange(previousValue_, calibrationThresholdPercentage_);
-            }
-
-            float ShowValue() {
-                previousValue_ = currentValue_;
-                currentValue_ = GetValue();
-
-                if (isDrifting()) {
-                    return initialValue_;
-                }
-
-                // if (conditionToCalibrate()) {
-                //     Calibrate();
-                // }
-                
-                return currentValue_;
-            }
-
+    float get_value() const {
+        return (first_.GetValue() + second_.GetValue()) / 2.0;
+    }
             
+    bool checkPercentageChange(const float read, const float ref, const float threshold) {
+        float change = ((read - ref) / ref) * 100.0;
+        return abs(change) < threshold;
+    }
 
-            
-        
-        private:
-            Scale scale0_, scale1_;
-            float initialValue_, previousValue_, currentValue_;
-            float driftingThresholdPercentage_ = 0.5, calibrationThresholdPercentage_ = 0.3;
-        
-            bool checkPercentageChange(const float& referenceValue, const float& thresholdPercentage) {
-                float percentageChange = ((currentValue_ - referenceValue) / referenceValue) * 100.0;
-                return abs(percentageChange) < thresholdPercentage;
-            }
-    };
+    void check_drifting(const float read) {
+        // check drifting is setting also real_. This is a sign of a mistake. 
+        const bool isDrifting = checkPercentageChange(read, drifting_, driftingThreshold_);
+        if (isDrifting) {
+            drifting_ = read;
+            return;
+        }
+        real_ = read;
+    }
+
+    void check_calibrate(const float read) {
+        const bool needsCalibration = checkPercentageChange(read, real_, calibrationThreshold_);
+        if(needsCalibration) {
+            Calibrate(real_);
+        }
+    }
+
+private:
+    TAdapter& first_;
+    TAdapter& second_;
+    
+    float real_;
+    float drifting_;
+
+    float driftingThreshold_ = 0.5, calibrationThreshold_ = 0.3;
+};
+
 }
