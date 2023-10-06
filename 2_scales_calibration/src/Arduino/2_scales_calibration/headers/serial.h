@@ -24,7 +24,7 @@ public:
     
     Buffer get_buffer() {
         Buffer buffer;
-        serial_.readBytesUntil('\n', buffer.payload, sizeof(buffer.payload) - 1); // Read command bytes
+        buffer.size_ = serial_.readBytesUntil('\n', buffer.payload, sizeof(buffer.payload) - 1); // Read command bytes
         return buffer;
     }
     

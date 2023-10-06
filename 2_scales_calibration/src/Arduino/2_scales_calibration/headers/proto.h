@@ -16,12 +16,14 @@ enum CommandType
 struct Buffer
 {
     byte payload[BUFFER_SIZE];
+    size_t size_;
 
     String toString() const {
         String result = "";
-        for (int i = 0; i < BUFFER_SIZE; ++i) {
+        for (int i = 0; i < size_; ++i) {
             result += String(int(payload[i])) + " ";
         }
+        result += "\n";
         return result;
     }
 };
@@ -41,6 +43,7 @@ struct CalibrateMessage {
         Buffer buf;
         buf.payload[0] = CALIBRATE;
         buf.payload[1] = scaleIndex_;
+        buf.size_ = 2;
         return buf;
     }
 
@@ -51,13 +54,12 @@ struct CalibrateMessage {
 struct WeightMessage{   
     WeightMessage() {}
     
-    
     void fromBuffer(const Buffer& buf) {
         numberOfScales_ = buf.payload[1];
         for (byte i = 0; i < numberOfScales_; ++i)
         {
             int intWeight = buf.payload[2 * i + 2] << 8 | buf.payload[2 * i + 3];
-            floatWeight_[i] = static_cast<float>(intWeight) / 100.0;
+            floatWeight_[i] = intWeight / 100.0;
         }
     }
 
@@ -71,6 +73,8 @@ struct WeightMessage{
             buf.payload[2 * i + 2] = intWeight >> 8;
             buf.payload[2 * i + 3] = intWeight;
         }
+        buf.size_ = 2 + numberOfScales_ * 2;
+
         return buf;
     }
 

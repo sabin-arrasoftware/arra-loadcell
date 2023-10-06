@@ -100,4 +100,4 @@ class ScalesHandler:
 
     def is_weight_message(self, buffer):
         print("Int(buffer[0]): ", int(buffer[0]))
-        return int(buffer[0]) == 2
+        return int(buffer[0]) == 1

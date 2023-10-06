@@ -3,24 +3,24 @@
 
 namespace  arra {
 
-template <class Scale>
+template <class TScale>
 class ScalesHandler {
 
 public:
     ScalesHandler() : nr_scales_(0) {};
 
     void Calibrate(const Buffer& buf) {
-        const CalibrateMessage msg; 
+        CalibrateMessage msg; 
         msg.fromBuffer(buf);
         
         if (isNotValidIndex(msg.scaleIndex_)) {
             return;
         }
-        scales_[msg.scaleIndex_].Calibrate(msg.calibrationMass_);
+        scales_[msg.scaleIndex_]->Calibrate(msg.calibrationMass_);
     }
 
-    void AddScale(const Scale& scale) {
-        scales_[nr_scales_] = scale;
+    void AddScale(const TScale& scale) {
+        scales_[nr_scales_] = &scale;
         nr_scales_++;                
     }   
 
@@ -28,7 +28,7 @@ public:
         if (isNotValidIndex(index)) {
             return 0.0f;
         }
-        return scales_[index].GetValue();
+        return scales_[index]->GetValue();
     }   
 
     Buffer getWeightMessage() {
@@ -37,7 +37,7 @@ public:
         for (int i = 0; i < nr_scales_; ++i) {
             weightMessage.floatWeight_[i] = GetValueFromIndex(i);
         }
-        return weightMessage.toBuffer()
+        return weightMessage.toBuffer();
     }
 
 private:
@@ -46,7 +46,7 @@ private:
     }   
 
 private:
-    Scales scales_[MAX_NR_SCALES];
+    TScale *scales_[MAX_NR_SCALES];
     int nr_scales_;
 };
 

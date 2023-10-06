@@ -62,7 +62,7 @@ class Scale:
             was_displaying = True
             self.is_displaying.set(False)
 
-        command = bytes([0, self.scale_num - 1])
+        command = bytes([0, self.scale_num - 1, 2, 98])
         print("Command: ", command)
 
         #message = f"Place known mass on scale {self.scale_num} ..."

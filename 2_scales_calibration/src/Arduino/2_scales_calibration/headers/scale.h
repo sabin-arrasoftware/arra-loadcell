@@ -12,10 +12,11 @@ public:
         first_.Calibrate(calibrationMass);
         second_.Calibrate(calibrationMass);
         real_ = calibrationMass;
+        drifting_ = calibrationMass;
     }
 
     float GetValue() const {
-        val = get_value();
+        float val = get_value();
 
         check_drifting(val);
         check_calibrate(val);
@@ -35,7 +36,6 @@ private:
     }
 
     void check_drifting(const float read) {
-        // check drifting is setting also real_. This is a sign of a mistake. 
         const bool isDrifting = checkPercentageChange(read, drifting_, driftingThreshold_);
         if (isDrifting) {
             drifting_ = read;
@@ -45,7 +45,7 @@ private:
     }
 
     void check_calibrate(const float read) {
-        const bool needsCalibration = checkPercentageChange(read, real_, calibrationThreshold_);
+        const bool needsCalibration = !checkPercentageChange(read, real_, calibrationThreshold_);
         if(needsCalibration) {
             Calibrate(real_);
         }
