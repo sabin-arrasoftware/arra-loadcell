@@ -1,3 +1,4 @@
+// scale.tpp
 
 namespace arra {
 
@@ -14,8 +15,8 @@ template<class TAdapter>
 Scale<TAdapter>::Scale(TAdapter& first, TAdapter& second)
 : first_(first)
 , second_(second) 
-{}
-
+{
+}
 
 // Public
 template<class TAdapter>
@@ -37,8 +38,8 @@ float Scale<TAdapter>::GetValue() const
     const bool isDrifting = isWithinThreshold(average, driftReference_, driftThreshold_);
     if (isDrifting) 
     {
-        driftReference_ = val;
-        // drift might accumulate, if the drift is to big, we just recalibrate
+        driftReference_ = average;  // Fixed from 'val' to 'average'
+        // drift might accumulate, if the drift is too big, we just recalibrate
         const bool needsCalibration = !isWithinThreshold(average, measured_, calibThreshold_);
         if(needsCalibration) 
         {

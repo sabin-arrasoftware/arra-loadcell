@@ -4,13 +4,15 @@
  */
 
 #pragma once
+#include <stdint.h>
+typedef uint8_t byte;
 
 namespace arra {
 
 /**
  * @brief The maximum buffer size for communication.
  */
-const byte BUFFER_SIZE = 16;
+const byte PAYLOAD_SIZE = 16;
 
 /**
  * @brief The maximum number of scales supported.
@@ -18,107 +20,115 @@ const byte BUFFER_SIZE = 16;
 const byte MAX_NR_SCALES = 4;
 
 /**
- * @enum CommandType
- * @brief Enumerates the types of commands supported by the protocol.
+ * @enum OperationType
+ * @brief Enumerates the types of operations supported by the protocol.
  */
-enum CommandType {
-    CALIBRATE = 0, /**< Calibration command. */
-    WEIGHT,        /**< Weight measurement command. */
-    LAST           /**< Sentinel value. Used to determine the number of commands. */
+enum OperationType 
+{
+    CALIBRATE = 0, /**< Calibration operation. */
+    WEIGHT,        /**< Weight measurement operation. */
+    ERROR          /**< Also Sentinel value. Used to determine the number of operations. */
 };
 
 /**
- * @struct Buffer
- * @brief Represents a buffer for communication.
- * 
- * This structure holds the payload data and its size for communication.
+ * @enum MessageType
+ * @brief Enumerates the types of messages supported by the protocol.
  */
-struct Buffer {
-    byte payload_[BUFFER_SIZE]; /**< The payload data. */
-    size_t size_;              /**< The size of the payload. */
-
-    /**
-     * @brief Converts the buffer to a string representation.
-     * @return String The string representation of the buffer.
-     */
-    String ToString() const;
+enum MessageType
+{
+    REQUEST = 0,
+    RESPONSE
 };
 
 /**
- * @struct CalibrateMessage
- * @brief Represents a calibration message.
- * 
- * This structure is used to handle calibration messages, converting them to and from buffers.
+ * @enum ErrorCode
+ * @brief Enumerates the types of error codes supported by the protocol.
  */
-struct CalibrateMessage {
-    /**
-     * @brief Default constructor.
-     */
-    CalibrateMessage();
+enum ErrorCode 
+{
+    ERR_UNKNOWN_REQUEST = 0,  /**< The request type is not recognized. */
+    ERR_HEADER_TRUNCATED,     /**< The header was not fully received. */
+    ERR_PAYLOAD_TRUNCATED,    /**< The payload was not fully received based on the expected size. */
+    ERR_INVALID_PAYLOAD_SIZE, /**< The size of the payload specified in the header exceeds the maximum allowed. */
+    ERR_INVALID_SCALE_INDEX   /**< The provided scale index is unknown for us. */
+};
 
-    /**
-     * @brief Converts a buffer to a CalibrateMessage.
-     * @param buf The buffer to convert.
-     */
-    void FromBuffer(const Buffer& buf);
+/**
+ * @struct Message
+ * @brief Represents a message for communication.
+ * 
+ * This structure holds the message type, operation type, payload size and the payload data for communication.
+ */
+#pragma pack(push, 1)
+struct Message 
+{
+    byte operationType_;
+    byte messageType_;
+    byte payloadSize_;
+    byte payload_[PAYLOAD_SIZE]; /**< Fixed-size payload. */
+};
+#pragma pack(pop)
 
-    /**
-     * @brief Converts the CalibrateMessage to a buffer.
-     * @return Buffer The resulting buffer.
-     */
-    Buffer ToBuffer();
-
+/**
+ * @struct CalibrateRequest
+ * @brief Represents a calibration request message.
+ */
+struct CalibrateRequest 
+{
     byte scaleIndex_;          /**< The index of the scale to calibrate. */
     float calibrationMass_;    /**< The calibration mass value. */
+
+    void FromMessage(const Message& msg);
+    Message ToMessage();
 };
 
 /**
- * @struct WeightMessage
- * @brief Represents a weight measurement message.
- * 
- * This structure is used to handle weight measurement messages, converting them to and from buffers.
+ * @struct CalibrateResponse
+ * @brief Represents a calibration response message.
  */
-struct WeightMessage {
-    /**
-     * @brief Default constructor.
-     */
-    WeightMessage();
+struct CalibrateResponse 
+{
+    bool success_;              /**< Indicates if the calibration was successful. */
 
-    /**
-     * @brief Converts a buffer to a WeightMessage.
-     * @param buf The buffer to convert.
-     */
-    void FromBuffer(const Buffer& buf);
+    void FromMessage(const Message& msg);
+    Message ToMessage();
+};
 
-    /**
-     * @brief Converts the WeightMessage to a buffer.
-     * @return Buffer The resulting buffer.
-     */
-    Buffer ToBuffer();
+/**
+ * @struct WeightRequest
+ * @brief Represents a weight measurement request message.
+ */
+struct WeightRequest 
+{
+    void FromMessage(const Message& msg);
+    Message ToMessage();
+};
 
+/**
+ * @struct WeightResponse
+ * @brief Represents a weight measurement response message.
+ */
+struct WeightResponse 
+{
     byte numberOfScales_;                      /**< The number of scales for which weights are provided. */
     float floatWeight_[MAX_NR_SCALES];         /**< The weight values for each scale. */
+
+    void FromMessage(const Message& msg);
+    Message ToMessage();
 };
 
 /**
- * @brief Checks if a buffer represents a calibration message.
- * @param buffer The buffer to check.
- * @return bool True if the buffer represents a calibration message, false otherwise.
+ * @struct ErrorResponse
+ * @brief Represents a response for an unknown or unsupported request.
  */
-bool IsCalibrateMsg(const Buffer& buffer);
+struct ErrorResponse 
+{
+    byte errorCode_; /**< An error code indicating the type of error or reason for the unknown request. */
 
-/**
- * @brief Checks if a buffer represents a weight measurement message.
- * @param buffer The buffer to check.
- * @return bool True if the buffer represents a weight measurement message, false otherwise.
- */
-bool IsWeightMsg(const Buffer& buffer);
+    void FromMessage(const Message& msg);
+    Message ToMessage();
+};
 
-/**
- * @brief Retrieves the command type from a buffer.
- * @param buffer The buffer to check.
- * @return CommandType The type of command represented by the buffer.
- */
-CommandType GetCommandType(const Buffer& buffer);
+Message createErrorResponse(const ErrorCode ec);
 
 } // namespace arra

@@ -1,6 +1,6 @@
 // serial.tpp
 
-namespace arra {
+nnamespace arra {
 
 template <class TCmdHandler>
 Serial<TCmdHandler>::Serial(HardwareSerial& serial, TCmdHandler& h)
@@ -18,28 +18,56 @@ void Serial<TCmdHandler>::Start()
 }
 
 template <class TCmdHandler>
-void Serial<TCmdHandler>::Write(const String& msg)
-{
-    serial_.println(msg);
-}
-
-template <class TCmdHandler>
 void Serial<TCmdHandler>::ProcessSerialData()
 {
     if (serial_.available()) 
     {
-        ch_.Execute(getBuffer());
+        Message request = read();
+        Message response = request.operationType_ != ERROR ?
+            ch_.Execute(request) : request;
+        write(response);
     }
 }
 
 // Private
 
 template <class TCmdHandler>
-Buffer Serial<TCmdHandler>::getBuffer() 
+Message Serial<TCmdHandler>::read() 
 {
-    Buffer buffer;
-    buffer.size_ = serial_.readBytesUntil('\n', buffer.payload, sizeof(buffer.payload) - 1);
-    return buffer;
+    Message msg;
+
+    // 1. Read the header
+    byte header[3];
+    size_t bytesRead = serial_.readBytes(header, 3);
+    if (bytesRead != 3) 
+    {
+        return createErrorResponse(ERR_HEADER_TRUNCATED);
+    }
+
+    msg.operationType_ = header[0];
+    msg.messageType_ = header[1];
+    msg.payloadSize_ = header[2];
+
+    // 2. Read the payload based on the size from the header
+    if (msg.payloadSize_ > PAYLOAD_SIZE) 
+    {
+        return createErrorResponse(ERR_INVALID_PAYLOAD_SIZE);
+    }
+
+    bytesRead = serial_.readBytes(msg.payload_, msg.payloadSize_);
+    if (bytesRead != msg.payloadSize_)
+    {
+        return createErrorResponse(ERR_PAYLOAD_TRUNCATED);
+    }
+
+    return msg;
+}
+
+template <class TCmdHandler>
+void Serial<TCmdHandler>::write(const Message& msg)
+{
+    const size_t payload_size = msg.payloadSize_;
+    serial_.write(reinterpret_cast<const byte*>(&msg), HEADER_SIZE + payload_size);
 }
 
 } // namespace arra

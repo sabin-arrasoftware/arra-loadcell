@@ -15,22 +15,14 @@ namespace arra {
  * This class provides methods to register callbacks for specific command types and to execute 
  * the appropriate callback based on the command type found in a buffer.
  */
-class CommandHandler {
+class CommandHandler 
+{
 public:
-    // Definitions:
-
-    /**
-     * @typedef CommandFun
-     * @brief A member function pointer type for command functions.
-     * @note This type is currently unused.
-     */
-    typedef void (CommandHandler::*CommandFun)(const Buffer&);
-
     /**
      * @typedef CallbackFun
      * @brief A function pointer type for command callbacks.
      */
-    typedef void (*CallbackFun)(const Buffer&);     
+    typedef Message (*FnRequest)(const Message&);     
 
     /**
      * @brief Default constructor.
@@ -43,26 +35,17 @@ public:
      * @param cmd The command type.
      * @param cb The callback function.
      */
-    void AddCallback(CommandType cmd, CallbackFun cb);
+    void AddCallback(OperationType op, FnRequest cb);
 
     /**
      * @brief Executes the callback associated with the command type found in the buffer.
      * 
      * @param buf The buffer containing the command.
      */
-    void Execute(const Buffer& buf);
+    Message Execute(const Message& buf);
 
 private:
-    /**
-     * @brief Checks if the command type is valid.
-     * 
-     * @param cmd The command type to check.
-     * @return bool True if the command type is valid, false otherwise.
-     */
-    bool isValid(const int cmd);
-
-private:
-    CallbackFun cbs_[LAST]; /**< An array of callbacks, indexed by command type. */        
+    FnRequest cbs_[ERROR]; /**< An array of callbacks, indexed by command type. */        
 };
 
 } // end namespace arra

@@ -12,9 +12,9 @@ namespace arra {
  * @class ScalesHandler
  * @brief Manages multiple scales and provides methods to calibrate and get readings.
  * 
- * This class can handle multiple scales, calibrate them based on messages, and retrieve values.
+ * This class can handle multiple scales, calibrate them based on messages, and retrieve weights.
  * 
- * @tparam TScale The type of scale. Must have `Calibrate` and `GetValue` methods.
+ * @tparam TScale The type of scale. Must have `GetWeight` and `GetValue` methods.
  */
 template <class TScale>
 class ScalesHandler 
@@ -29,9 +29,11 @@ public:
     /**
      * @brief Calibrate a scale based on a given message.
      * 
-     * @param buf The buffer containing calibration data.
+     * @param msg The Message containing calibration data.
+     *
+     * @return Message The message containing the weight message.
      */
-    void Calibrate(const Buffer& buf);
+    Message Calibrate(const Message& msg);
 
     /**
      * @brief Add a scale to the handler.
@@ -42,18 +44,20 @@ public:
 
     /**
      * @brief Construct a weight message based on the values from all scales.
-     * 
-     * @return Buffer The buffer containing the weight message.
+     *
+     * @param msg The Message containing calibration data.
+     *
+     * @return Message The message containing the weight message.
      */
-    Buffer GetValues();
+    Message GetWeights(const Message& msg);
 
 private:
     bool scaleExists(const int scale_idx);
-    flat getScaleValue(const int scale_idx)
+    float getScaleValue(const int scale_idx);  // Corrected the return type from 'flat' to 'float'
 
 private:
     TScale *scales_[MAX_NR_SCALES];
-    int nr_scales_;
+    int nrScales_;
 };
 
 } // namespace arra

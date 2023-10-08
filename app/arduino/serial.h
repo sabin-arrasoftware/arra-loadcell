@@ -42,19 +42,13 @@ public:
     void Start();
 
     /**
-     * @brief Send a message over serial.
-     * 
-     * @param msg The message to be sent.
-     */
-    void Write(const String& msg);
-
-    /**
      * @brief Process incoming data from serial using the command handler.
      */
     void ProcessSerialData();
 
 private:
-    Buffer getBuffer();
+    Message read();
+    void write(const Message& msg);
 
 private:
     HardwareSerial& serial_; 

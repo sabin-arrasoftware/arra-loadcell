@@ -1,33 +1,38 @@
+// scales_handler.tpp
 
 namespace arra {
 
 // Calibrate method implementation
 template <class TScale>
-void ScalesHandler<TScale>::Calibrate(const Buffer& buf) 
+Message ScalesHandler<TScale>::Calibrate(const Message& msg) 
 {
-    CalibrateMessage msg; 
-    msg.FromBuffer(buf);
+    CalibrateRequest request; 
+    request.FromMessage(msg);
     
-    if (!scaleExists(msg.scaleIndex_)) {
-        return;
+    if (!scaleExists(request.scaleIndex_)) {
+        return createErrorResponse(ERR_INVALID_SCALE_INDEX);
     }
-    scales_[msg.scaleIndex_]->Calibrate(msg.calibrationMass_);
+    scales_[request.scaleIndex_]->Calibrate(request.calibrationMass_);
+
+    CalibrateResponse response;
+    response.success_ = true;
+    return response.ToMessage();
 }
 
 // AddScale method implementation
 template <class TScale>
 void ScalesHandler<TScale>::AddScale(const TScale& scale) 
 {
-    scales_[nrScales_] = &scale;
+    scales_[nrScales_] = &scale; 
     nrScales_++;                
 }   
 
 template <class TScale>
-Buffer ScalesHandler<TScale>::GetValues() {
+Message ScalesHandler<TScale>::GetWeights(const Message& msg) {
     // populate weightMessage
-    WeightMessage msg;
+    WeightResponse response;
     msg.numberOfScales_ = nrScales_;
-    for (int scaleIdx = 0; i < nrScales_; ++scaleIdx) {
+    for (int scaleIdx = 0; scaleIdx < nrScales_; ++scaleIdx) {
         msg.floatWeight_[scaleIdx] = getScaleValue(scaleIdx);
     }
     return msg.ToBuffer();
@@ -38,17 +43,16 @@ Buffer ScalesHandler<TScale>::GetValues() {
 template <class TScale>
 bool ScalesHandler<TScale>::scaleExists(const int scaleIdx) 
 {
-    return scaleIdx >= 0 && scaleIdx < nr_scales_;
+    return scaleIdx >= 0 && scaleIdx < nrScales_;
 }
 
 template <class TScale>
-bool ScalesHandler<TScale>::getScaleValue(const int scaleIdx) 
+float ScalesHandler<TScale>::getScaleValue(const int scaleIdx) 
 {
      if (!scaleExists(scaleIdx)) {
         return 0.0f;
     }
     return scales_[scaleIdx]->GetValue();
 }
-
 
 } // namespace arra

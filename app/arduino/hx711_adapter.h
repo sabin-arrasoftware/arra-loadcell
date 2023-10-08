@@ -18,7 +18,7 @@ namespace arra {
  */
 class HX711Adapter 
 {
-    
+
 public:
     /**
      * @brief Construct a new HX711 Adapter object and initialize the HX711.
@@ -33,9 +33,9 @@ public:
      * 
      * This method takes multiple readings from the HX711, averages them, and then calculates a calibration factor.
      * 
-     * @param calibrationMass Known mass for calibration.
+     * @param refMass Known mass for calibration.
      */
-    void Calibrate(const float calibrationMass);
+    void Calibrate(const float refMass);
 
     /**
      * @brief Get the current value from the HX711 in units based on the calibration.

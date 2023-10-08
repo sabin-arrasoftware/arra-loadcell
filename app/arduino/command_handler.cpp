@@ -1,31 +1,49 @@
+// command_handler.cpp
+
 #include "command_handler.h"
 
 namespace arra {
 
-CommandHandler::CommandHandler()
+// Free Functions
+
+/**
+ * @brief Checks if the given operation type is known.
+ * 
+ * @param op The operation type to check.
+ * @return True if the operation type is known, false otherwise.
+ */
+bool isKnownOperation(const OperationType op) 
 {
+    return op >= 0 && op <= ERROR;
 }
 
-void CommandHandler::AddCallback(CommandType cmd, CallbackFun cb) 
+// Ctor 
+CommandHandler::CommandHandler()
 {
-    if(!cmd_is_valid(cmd))
+    // Initialize the callback array to nullptr
+    for (int i = 0; i < ERROR; ++i) {
+        cbs_[i] = [](const Message&){return Message();};
+    }
+}
+
+// Public
+
+void CommandHandler::AddCallback(OperationType op, FnRequest cb) 
+{
+    if(!isKnownOperation(op))
     {
         return;
     }
-    cbs_[cmd] = cb;
+    cbs_[op] = cb;
 }
 
-void CommandHandler::Execute(const Buffer& buf) 
+Message CommandHandler::Execute(const Message& msg) 
 {
-    CommandType cmd = getCommandType(buf);
-    if(!isValid(cmd)){
-        return;
+    if(!isKnownOperation(OperationType(msg.operationType_)))
+    { 
+        return createErrorResponse(ERR_UNKNOWN_REQUEST);
     }
-    (cbs_[cmd])(buf);
-}
-
-bool CommandHandler::isValid(const int cmd) {
-    return cmd >= 0 && cmd < LAST;
+    return (cbs_[msg.operationType_])(msg);
 }
 
 } // end namespace arra

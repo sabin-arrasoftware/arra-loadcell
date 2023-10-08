@@ -55,5 +55,3 @@ private:
 };
 
 } // namespace arra
-
-#include "scale.tpp"
