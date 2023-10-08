@@ -1,0 +1,58 @@
+@startuml
+
+class "main.py" {
+    .. Entry point for Python app ..
+}
+
+class "ArduinoAppController" {
+    - root : tkinter.Tk
+    - callback_manager : CallbackManager
+    - view_manager : ViewManager
+    - communication : ArduinoCommunication
+    + __init__(root: tkinter.Tk)
+    + toggle_start()
+    + clear_text()
+    + calibrate()
+    + update_settings()
+}
+
+class "CallbackManager" {
+    + register(event: Events, callback: function)
+}
+
+class "ViewManager" {
+    - root : tkinter.Tk
+    - text_area : TextArea
+    - buttons : ButtonsFrame
+    - settings : Settings
+    + __init__(root: tkinter.Tk, callback_manager: CallbackManager)
+}
+
+class "TextArea" {
+    .. GUI component for text display ..
+}
+
+class "ButtonsFrame" {
+    .. GUI component for buttons ..
+}
+
+class "Settings" {
+    .. GUI component for settings ..
+}
+
+class "ArduinoCommunication" {
+    - connection : serial.Serial
+    + __init__(port: str, baudrate: int, timeout: int)
+}
+
+"main.py" --> "ArduinoAppController" : starts
+
+"ArduinoAppController" --> "CallbackManager" : uses
+"ArduinoAppController" --> "ViewManager" : uses
+"ArduinoAppController" --> "ArduinoCommunication" : uses
+
+"ViewManager" --> "TextArea" : uses
+"ViewManager" --> "ButtonsFrame" : uses
+"ViewManager" --> "Settings" : uses
+
+@enduml
