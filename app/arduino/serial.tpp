@@ -1,6 +1,9 @@
 // serial.tpp
 
-nnamespace arra {
+namespace arra {
+
+static const int HEADER_SIZE = 3;
+
 
 template <class TCmdHandler>
 Serial<TCmdHandler>::Serial(HardwareSerial& serial, TCmdHandler& h)
@@ -37,9 +40,9 @@ Message Serial<TCmdHandler>::read()
     Message msg;
 
     // 1. Read the header
-    byte header[3];
-    size_t bytesRead = serial_.readBytes(header, 3);
-    if (bytesRead != 3) 
+    byte header[HEADER_SIZE];
+    size_t bytesRead = serial_.readBytes(header, HEADER_SIZE);
+    if (bytesRead != HEADER_SIZE) 
     {
         return createErrorResponse(ERR_HEADER_TRUNCATED);
     }

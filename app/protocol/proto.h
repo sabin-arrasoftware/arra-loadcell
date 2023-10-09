@@ -10,6 +10,13 @@ typedef uint8_t byte;
 namespace arra {
 
 /**
+ * @brief The header size.
+ */
+const byte HEADER_SIZE = 3;
+
+
+
+/**
  * @brief The maximum buffer size for communication.
  */
 const byte PAYLOAD_SIZE = 16;

@@ -89,8 +89,8 @@ class ArduinoAppController:
             if response.success:  
                 txt = "Calibration was successful!"
     
-            self.view_manager.inform("Calibration", txt)  # Fixed the variable name from 'text' to 'txt'
-
+            self.view_manager.inform("Calibration", txt) 
+            
     def update_settings(self):
         """
         Notify the user that the settings have been updated.

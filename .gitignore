@@ -64,6 +64,9 @@ db.sqlite3
 instance/
 .webassets-cache
 
+# VS Code stuff:
+.vscode/
+
 # Scrapy stuff:
 .scrapy
 

@@ -28,14 +28,14 @@ void ScalesHandler<TScale>::AddScale(const TScale& scale)
 }   
 
 template <class TScale>
-Message ScalesHandler<TScale>::GetWeights(const Message& msg) {
+Message ScalesHandler<TScale>::GetWeights(const Message& ) {
     // populate weightMessage
     WeightResponse response;
-    msg.numberOfScales_ = nrScales_;
+    response.numberOfScales_ = nrScales_;
     for (int scaleIdx = 0; scaleIdx < nrScales_; ++scaleIdx) {
-        msg.floatWeight_[scaleIdx] = getScaleValue(scaleIdx);
+        response.floatWeight_[scaleIdx] = getScaleValue(scaleIdx);
     }
-    return msg.ToBuffer();
+    return response.ToMessage();
 }
 
 // Private

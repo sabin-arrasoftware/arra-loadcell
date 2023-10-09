@@ -62,4 +62,4 @@ private:
 
 } // namespace arra
 
-#include "scales_handler."
+#include "scales_handler.tpp"
