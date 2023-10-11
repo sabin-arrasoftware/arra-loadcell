@@ -41,7 +41,7 @@ public:
      * 
      * @return float The calibrated value.
      */
-    float GetValue() const;
+    float GetValue();
 
 private:
     TAdapter& first_;
@@ -55,3 +55,5 @@ private:
 };
 
 } // namespace arra
+
+#include "scale.tpp"

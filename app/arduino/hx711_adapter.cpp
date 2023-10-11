@@ -22,7 +22,7 @@ void HX711Adapter::Calibrate(const float refMass) {
 }
 
 // GetValue method implementation
-float HX711Adapter::GetValue() const {
+float HX711Adapter::GetValue()  {
     return hx711_.get_units();  // Get the value in units based on calibration
 }
 

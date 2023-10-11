@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
-#include "proto.h"
+#include "../arduino/proto.h"
 
 namespace py = pybind11;
 
@@ -28,6 +28,7 @@ PYBIND11_MODULE(proto_module, m) {
 
     py::class_<arra::Message>(m, "Message")
         .def(py::init<>())
+        .def("ToString", &arra::Message::ToString)
         .def_readwrite("operationType_", &arra::Message::operationType_)
         .def_readwrite("messageType_", &arra::Message::messageType_)
         .def_readwrite("payloadSize_", &arra::Message::payloadSize_)
@@ -50,7 +51,7 @@ PYBIND11_MODULE(proto_module, m) {
         .def(py::init<>())
         .def("FromMessage", &arra::CalibrateResponse::FromMessage)
         .def("ToMessage", &arra::CalibrateResponse::ToMessage)
-        .def_readwrite("success", &arra::CalibrateResponse::success_);
+        .def_readwrite("success_", &arra::CalibrateResponse::success_);
 
     py::class_<arra::WeightRequest>(m, "WeightRequest")
         .def(py::init<>())

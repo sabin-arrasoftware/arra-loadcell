@@ -4,9 +4,12 @@
 #include "command_handler.h"
 #include "serial.h"
 #include "scale.h"
+#include "proto.h"
 
 // Define the serial object for communication
 HardwareSerial& serial = Serial;
+
+const int ledPin = 10;
 
 // Create instances of the necessary classes
 arra::CommandHandler ch;
@@ -17,6 +20,9 @@ arra::Scale<arra::HX711Adapter> scale(firstAdapter, secondAdapter);
 
 void setup()
 {
+  pinMode(10, OUTPUT);
+  digitalWrite(10, LOW);
+
   // Add the scale to the scales handler
   sh.AddScale(scale);
 

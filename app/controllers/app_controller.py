@@ -1,7 +1,7 @@
 import tkinter as tk
-import serial
 import threading
 import time
+from protocol import proto_module
 from views.view_manager import ViewManager
 from controllers.callback_manager import CallbackManager, Events
 from services.arduino_communication import ArduinoCommunication
@@ -64,7 +64,8 @@ class ArduinoAppController:
         interval = int(self.view_manager.get_setting_val("Update Interval"))
         while self.thread_stop:
             resp = self.communication.get_weights()
-            self.view_manager.insert_text_area(resp.ToString())
+            dispaly_str = resp.floatWeight_[0]
+            self.view_manager.insert_text_area(dispaly_str)
             time.sleep(interval)
 
     def clear_text(self):
@@ -84,9 +85,8 @@ class ArduinoAppController:
         if gui_response:
             refMass = float(self.view_manager.get_setting_val("Calibration Mass"))
             response = self.communication.calibrate(0, refMass)
-            
             txt = "Calibration failed. Please try again."
-            if response.success:  
+            if response.success_:  
                 txt = "Calibration was successful!"
     
             self.view_manager.inform("Calibration", txt) 

@@ -4,7 +4,7 @@
  */
 
 #pragma once
-#include "../protocol/proto.h"
+#include "proto.h"
 
 namespace arra {
 

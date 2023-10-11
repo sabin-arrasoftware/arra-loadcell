@@ -8,7 +8,7 @@ Message ScalesHandler<TScale>::Calibrate(const Message& msg)
 {
     CalibrateRequest request; 
     request.FromMessage(msg);
-    
+
     if (!scaleExists(request.scaleIndex_)) {
         return createErrorResponse(ERR_INVALID_SCALE_INDEX);
     }

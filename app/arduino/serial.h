@@ -4,15 +4,9 @@
  */
 
 #pragma once
-#include "../protocol/proto.h"
+#include "proto.h"
 
 namespace arra {
-
-/**
- * @typedef fn_event
- * @brief A function pointer type pointing to functions taking no arguments and returning void.
- */
-typedef void (*fn_event)();
 
 /**
  * @class Serial

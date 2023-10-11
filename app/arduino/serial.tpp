@@ -2,13 +2,10 @@
 
 namespace arra {
 
-static const int HEADER_SIZE = 3;
-
-
 template <class TCmdHandler>
 Serial<TCmdHandler>::Serial(HardwareSerial& serial, TCmdHandler& h)
 : serial_(serial)
-, ch_(h) 
+, ch_(h)
 {
 }
 
@@ -44,6 +41,7 @@ Message Serial<TCmdHandler>::read()
     size_t bytesRead = serial_.readBytes(header, HEADER_SIZE);
     if (bytesRead != HEADER_SIZE) 
     {
+
         return createErrorResponse(ERR_HEADER_TRUNCATED);
     }
 
@@ -56,6 +54,7 @@ Message Serial<TCmdHandler>::read()
     {
         return createErrorResponse(ERR_INVALID_PAYLOAD_SIZE);
     }
+
 
     bytesRead = serial_.readBytes(msg.payload_, msg.payloadSize_);
     if (bytesRead != msg.payloadSize_)

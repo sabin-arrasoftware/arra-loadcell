@@ -46,7 +46,7 @@ class Settings:
 
         # Settings Frame
         frame = ttk.LabelFrame(parent, text="Settings", padding=(10, 5))
-        frame.pack(pady=20, padx=20, fill="x")
+        frame.pack(pady=20, padx=20, fill="both", expand=True)
 
         # Settings
         initial_settings = {

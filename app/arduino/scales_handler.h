@@ -4,7 +4,7 @@
  */
 
 #pragma once
-#include "../protocol/proto.h"
+#include "proto.h"
 
 namespace arra {
 
@@ -24,7 +24,7 @@ public:
     /**
      * @brief Construct a new ScalesHandler object.
      */
-    ScalesHandler();
+    ScalesHandler() = default;
 
     /**
      * @brief Calibrate a scale based on a given message.

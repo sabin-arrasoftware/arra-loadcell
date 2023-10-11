@@ -5,6 +5,8 @@
 
 #pragma once
 #include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 typedef uint8_t byte;
 
 namespace arra {
@@ -13,8 +15,6 @@ namespace arra {
  * @brief The header size.
  */
 const byte HEADER_SIZE = 3;
-
-
 
 /**
  * @brief The maximum buffer size for communication.
@@ -73,6 +73,16 @@ struct Message
     byte messageType_;
     byte payloadSize_;
     byte payload_[PAYLOAD_SIZE]; /**< Fixed-size payload. */
+
+    char* ToString() 
+    {
+        static char buffer[256]; 
+
+        snprintf(buffer, sizeof(buffer), "OperationType: %d, MessageType: %d, PayloadSize: %d, Payload: %s",
+                 operationType_, messageType_, payloadSize_, payload_);
+
+        return buffer;
+    }
 };
 #pragma pack(pop)
 

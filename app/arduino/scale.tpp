@@ -1,5 +1,7 @@
 // scale.tpp
 
+#include <math.h>
+
 namespace arra {
 
 // Free Functions.
@@ -29,7 +31,7 @@ void Scale<TAdapter>::Calibrate(const float refMass)
 }
 
 template<class TAdapter>
-float Scale<TAdapter>::GetValue() const 
+float Scale<TAdapter>::GetValue()
 {
     // get average measurement from both adapters:
     float average = (first_.GetValue() + second_.GetValue()) / 2.0;

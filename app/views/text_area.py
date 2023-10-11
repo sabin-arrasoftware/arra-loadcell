@@ -11,7 +11,7 @@ class TextArea:
 
         :param parent: The parent widget.
         """
-        self.text_area = tk.Text(parent, height=40, width=100)
+        self.text_area = tk.Text(parent, height=30, width=100)
         self.text_area.pack(pady=20)
 
     def insert(self, text: str):

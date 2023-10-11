@@ -42,7 +42,7 @@ public:
      * 
      * @return float Weight value based on calibration.
      */
-    float GetValue() const;
+    float GetValue();
 
 private:
     mutable HX711 hx711_; ///< HX711 object. Mutable because internal state might change during const operations.
