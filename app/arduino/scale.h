@@ -50,8 +50,8 @@ private:
     float measured_;
     float driftReference_;
 
-    static constexpr float driftThreshold_  = 0.5;
-    static constexpr float calibThreshold_  = 0.3;
+    static constexpr float driftThreshold_  = 0.7;
+    static constexpr float calibThreshold_  = 0.5;
 };
 
 } // namespace arra

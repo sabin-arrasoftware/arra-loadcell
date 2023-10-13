@@ -5,6 +5,7 @@ from protocol import proto_module
 from views.view_manager import ViewManager
 from controllers.callback_manager import CallbackManager, Events
 from services.arduino_communication import ArduinoCommunication
+from controllers.scheduler import Scheduler
 
 class ArduinoAppController:
     """
@@ -19,6 +20,9 @@ class ArduinoAppController:
         :param root: The root tkinter window.
         """
         self.root = root
+
+        # Initialize Scheduler
+        self.scheduler = Scheduler()
 
         # Initialize CallbackManager
         self.callback_manager = CallbackManager()
@@ -48,25 +52,26 @@ class ArduinoAppController:
     def toggle_start(self):
         """
         Toggle the start/stop state of the weight reading loop.
-        """
+        """ 
         self.thread_stop = self.view_manager.get_toggle_val()
+        print("thread_stop: ", self.thread_stop)
         if self.thread_stop:
-            self.thread = threading.Thread(target=self.read_weights_loop)
-            self.thread.start()
+            interval = int(self.view_manager.get_setting_val("Update Interval"))
+            print("Update interval: ", interval)
+            self.scheduler.schedule("GetWeights", self.read_weights, interval, 0)
         else:
-            if hasattr(self, 'thread'):
-                self.thread.join()  # Wait for the thread to finish
+            self.scheduler.stop("GetWeights")
 
-    def read_weights_loop(self):
+
+    def read_weights(self):
         """
         Continuously read weights from the Arduino at a specified interval and update the view.
         """
-        interval = int(self.view_manager.get_setting_val("Update Interval"))
-        while self.thread_stop:
-            resp = self.communication.get_weights()
-            dispaly_str = resp.floatWeight_[0]
-            self.view_manager.insert_text_area(dispaly_str)
-            time.sleep(interval)
+        resp = self.communication.get_weights()
+        dispaly_str = str(resp.floatWeight_[0])
+        print("display_str: ", dispaly_str)
+        self.view_manager.insert_text_area(dispaly_str)
+
 
     def clear_text(self):
         """
@@ -96,4 +101,4 @@ class ArduinoAppController:
         Notify the user that the settings have been updated.
         """
         message = f"Settings were updated!"
-        response = self.view_manager.ask("Update Settings", message)
+        self.view_manager.ask("Update Settings", message)

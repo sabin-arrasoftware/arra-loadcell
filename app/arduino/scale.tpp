@@ -8,7 +8,8 @@ namespace arra {
 
 bool isWithinThreshold(const float in, const float ref, const float threshold) 
 {
-    float change = ((in - ref) / ref) * 100.0;
+    float refNonNull = (ref < 0.01) ? 0.01 : ref;
+    float change = ((in - ref) / refNonNull) * 100.0;
     return abs(change) < threshold;
 }
 

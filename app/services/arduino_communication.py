@@ -47,26 +47,36 @@ class ArduinoCommunication:
 
         :return: A message object or None if no data is available.
         """
-        print(self.connection.in_waiting)
-        if self.connection.in_waiting > 0:
+
+        while self.connection.in_waiting == 0:
+        # while self.connection.in_waiting < 3:
+            print("connection_in_waiting: ", self.connection.in_waiting)
+            time.sleep(0.02)
+            
         
-            # Read the header first
-            header = self.connection.read(3)  # 3 bytes for the header
-            operationType, messageType, payloadSize = struct.unpack('BBB', header)
-            payload = self.connection.read(payloadSize)
+        # Read the header first
+        header = self.connection.read(3)  # 3 bytes for the header
+        operationType, messageType, payloadSize = struct.unpack('BBB', header)
+            
+        # Now that we have the header, check if enough data is available for the payload
+        # while self.connection.in_waiting < payloadSize:
+            # time.sleep(0.01)  # Wait until there is enough data
+            
+        # Read the payload
+        payload = self.connection.read(payloadSize)
+        print("payload size: " + str(payloadSize))
+            
+        # Convert payload to numpy array
+        payload_array = np.frombuffer(payload, dtype=np.uint8)
 
-            # Convert payload to numpy array
-            payload_array = np.frombuffer(payload, dtype=np.uint8)
+        # Construct the message from the header and payload
+        message = proto_module.Message()
+        message.operationType_ = operationType
+        message.messageType_ = messageType
+        message.payloadSize_ = payloadSize
+        message.payload_ = payload_array  # Assigning the numpy array
 
-            # Construct the message from the header and payload
-            message = proto_module.Message()
-            message.operationType_ = operationType
-            message.messageType_ = messageType
-            message.payloadSize_ = payloadSize
-            message.payload_ = payload_array  # Assigning the numpy array
-
-            return message
-        return None
+        return message
 
     def calibrate(self, scale_index, calibration_mass):
         """
@@ -90,8 +100,6 @@ class ArduinoCommunication:
         # Send the message to Arduino
         self.send_message(message)
 
-        time.sleep(5)
-
         # Read the response from Arduino
         msg = self.read_message()
         response = proto_module.CalibrateResponse()
@@ -107,8 +115,6 @@ class ArduinoCommunication:
         weight_request = proto_module.WeightRequest()
         message = weight_request.ToMessage()
         self.send_message(message)
-
-        time.sleep(5)
 
         # Read the response from Arduino
         msg = self.read_message()

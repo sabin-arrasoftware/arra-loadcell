@@ -51,7 +51,7 @@ class Settings:
         # Settings
         initial_settings = {
             "Calibration Mass": "6.1", 
-            "Update Interval": "200",
+            "Update Interval": "1",
             "Connection Port": "/dev/ttyUSB0",
             "Baud Rate": "9600"
         }
@@ -60,9 +60,9 @@ class Settings:
             self.settings[name] = Entry(frame, name, self.next_row(), default_value)
 
         # Update Button
-        self.update_btn = ttk.Button(frame, text="Update", 
-            command=lambda: callback_manager.execute(Events.UPDATE_SETTINGS))
-        self.update_btn.grid(row=self.next_row(), column=0, columnspan=2, pady=10)
+        # self.update_btn = ttk.Button(frame, text="Update", 
+        #     command=lambda: callback_manager.execute(Events.UPDATE_SETTINGS))
+        # self.update_btn.grid(row=self.next_row(), column=0, columnspan=2, pady=10)
 
     def next_row(self):
         """
