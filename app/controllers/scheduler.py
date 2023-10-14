@@ -4,6 +4,7 @@ import time
 class Scheduler:
     def __init__(self):
         self.tasks = {}
+        self.stop_events = {}
 
     def schedule(self, task_name, target_function, interval=0, delay=0):
         """
@@ -18,8 +19,9 @@ class Scheduler:
         if task_name in self.tasks:
             raise ValueError(f"Task with name '{task_name}' already exists.")
 
-        print("interval/1000: ", float(interval/1000))
-        print("delay/1000: ", float(interval/1000))
+        stop_event = threading.Event()
+        self.stop_events[task_name] = stop_event
+        
         task = threading.Thread(
             target=self._task_wrapper,
             args=(task_name, target_function, float(interval/1000), float(delay/1000)),  # Convert to seconds
@@ -36,25 +38,19 @@ class Scheduler:
         :param task_name: Name of the task to stop.
         """
         if task_name in self.tasks:
-            task = self.tasks[task_name]
+            self.stop_events[task_name].set()  # Signal the thread to stop
             del self.tasks[task_name]
-            #task.join()
+            del self.stop_events[task_name]
 
-    def _task_wrapper(self, task_name, target_function, interval, delay):
-        """
-        Internal function that runs the task.
-
-        :param task_name: Name of the task.
-        :param target_function: The function to execute.
-        :param args: Arguments to pass to the function.
-        :param interval: Time in seconds between task executions.
-        :param delay: Time in seconds before the first execution.
-        """
+    def _task_wrapper(self, task_name, target_function, interval, delay, stop_event):
         if delay > 0:
             time.sleep(delay)
 
         while task_name in self.tasks:
             target_function()
 
-            if interval > 0:
+            if interval > 0 and not stop_event.is_set():
                 time.sleep(interval)
+
+            if stop_event.is_set():  # Check if we should stop the thread
+                break
