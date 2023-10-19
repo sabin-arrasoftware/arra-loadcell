@@ -5,7 +5,6 @@
 namespace arra {
 
 // Free Functions.
-
 bool isWithinThreshold(const float in, const float ref, const float threshold) 
 {
     float refNonNull = (ref < 0.01) ? 0.01 : ref;
@@ -14,16 +13,17 @@ bool isWithinThreshold(const float in, const float ref, const float threshold)
 }
 
 // Constructor
-template<class TAdapter>
-Scale<TAdapter>::Scale(TAdapter& first, TAdapter& second)
+template<class TAdapter, class TThresholdProvider>
+Scale<TAdapter, TThresholdProvider>::Scale(TAdapter& first, TAdapter& second, TThresholdProvider& tp)
 : first_(first)
-, second_(second) 
+, second_(second)
+, tp_(tp) 
 {
 }
 
 // Public
-template<class TAdapter>
-void Scale<TAdapter>::Calibrate(const float refMass) 
+template<class TAdapter, class TThresholdProvider>
+void Scale<TAdapter, TThresholdProvider>::Calibrate(const float refMass) 
 {
     first_.Calibrate(refMass);
     second_.Calibrate(refMass);
@@ -31,11 +31,14 @@ void Scale<TAdapter>::Calibrate(const float refMass)
     driftReference_ = refMass;
 }
 
-template<class TAdapter>
-float Scale<TAdapter>::GetValue()
+template<class TAdapter, class TThresholdProvider>
+float Scale<TAdapter, TThresholdProvider>::GetValue()
 {
     // get average measurement from both adapters:
     float average = (first_.GetValue() + second_.GetValue()) / 2.0;
+
+    // calculate the drift threshold based on drift reference;
+    driftThreshold_ = tp_.get_threshold_percentage(driftReference_);
 
     // if is drifting, we don't change value, just update driftReference
     const bool isDrifting = isWithinThreshold(average, driftReference_, driftThreshold_);
@@ -56,5 +59,6 @@ float Scale<TAdapter>::GetValue()
 
     return measured_;
 }
+
 
 } // namespace arra

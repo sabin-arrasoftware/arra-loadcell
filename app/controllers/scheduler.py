@@ -24,7 +24,7 @@ class Scheduler:
         
         task = threading.Thread(
             target=self._task_wrapper,
-            args=(task_name, target_function, float(interval/1000), float(delay/1000)),  # Convert to seconds
+            args=(task_name, target_function, float(interval/1000), float(delay/1000), stop_event),  # Convert to seconds
             daemon=True,
         )
 

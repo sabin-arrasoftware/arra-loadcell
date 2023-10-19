@@ -15,8 +15,9 @@ namespace arra {
  * The readings are averaged from both adapters, and the class provides drift and calibration checks.
  * 
  * @tparam TAdapter The type of adapter. Must have `Calibrate` and `GetValue` methods.
+ * @tparam TThresholdProvider The type of threshold provider. Must have `get_threshold` method.
  */
-template<class TAdapter>
+template<class TAdapter, class TThresholdProvider>
 class Scale 
 {
 
@@ -26,8 +27,9 @@ public:
      * 
      * @param first The first adapter object.
      * @param second The second adapter object.
+     * @param tp The threshold provider object.
      */
-    Scale(TAdapter& first, TAdapter& second);
+    Scale(TAdapter& first, TAdapter& second, TThresholdProvider& tp);
 
     /**
      * @brief Calibrate both adapter objects.
@@ -36,6 +38,13 @@ public:
      */
     void Calibrate(const float refMass);
 
+     /**
+     * @brief Get the threshold percentage from the mass in grams.
+     * 
+     * @return float The threshold percentage.
+     */
+    float GetThreshold(float drift_ref_mass);
+
     /**
      * @brief Get the calibrated value from the scale.
      * 
@@ -43,14 +52,17 @@ public:
      */
     float GetValue();
 
+   
+
 private:
     TAdapter& first_;
     TAdapter& second_;
+    TThresholdProvider& tp_;
     
     float measured_;
     float driftReference_;
 
-    static constexpr float driftThreshold_  = 0.7;
+    float driftThreshold_  = 0.7;
     static constexpr float calibThreshold_  = 0.5;
 };
 

@@ -5,17 +5,26 @@
 #include "serial.h"
 #include "scale.h"
 #include "proto.h"
+#include "threshold_provider.h"
 
 // Define the serial object for communication
 HardwareSerial& serial = Serial;
+
+// Define the points for interpolation
+arra::Point points[arra::NUMBER_OF_POINTS] = {
+    {1, 0.2},
+    {1000, 1},
+    {10000, 5}
+};
 
 
 // Create instances of the necessary classes
 arra::CommandHandler ch;
 arra::Serial<arra::CommandHandler> rw(serial, ch);
-arra::ScalesHandler<arra::Scale<arra::HX711Adapter>> sh;
+arra::ScalesHandler<arra::Scale<arra::HX711Adapter, arra::ThresholdProvider>> sh;
+arra::ThresholdProvider tp(points);
 arra::HX711Adapter firstAdapter(14, 15), secondAdapter(18, 19);
-arra::Scale<arra::HX711Adapter> scale(firstAdapter, secondAdapter);
+arra::Scale<arra::HX711Adapter, arra::ThresholdProvider> scale(firstAdapter, secondAdapter, tp);
 
 void setup()
 {
