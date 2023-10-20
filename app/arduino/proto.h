@@ -34,6 +34,7 @@ enum OperationType
 {
     CALIBRATE = 0, /**< Calibration operation. */
     WEIGHT,        /**< Weight measurement operation. */
+    SETUP,         /**< Arduino setup operation. */
     ERROR          /**< Also Sentinel value. Used to determine the number of operations. */
 };
 
@@ -129,6 +130,35 @@ struct WeightResponse
 {
     byte numberOfScales_;                      /**< The number of scales for which weights are provided. */
     float floatWeight_[MAX_NR_SCALES];         /**< The weight values for each scale. */
+
+    void FromMessage(const Message& msg);
+    Message ToMessage();
+};
+
+/**
+ * @struct SetupRequest
+ * @brief Represents an Arduino setup request message.
+ */
+struct SetupRequest 
+{
+    byte scaleIndex_;
+    long baud_;
+    byte dt1_;
+    byte sck1_;
+    byte dt2_;
+    byte sck2_;
+
+    void FromMessage(const Message& msg);
+    Message ToMessage();
+};
+
+/**
+ * @struct SetupResponse
+ * @brief Represents an Arduino setup response message.
+ */
+struct SetupResponse 
+{
+    bool success_;              /**< Indicates if the setup was successful. */
 
     void FromMessage(const Message& msg);
     Message ToMessage();

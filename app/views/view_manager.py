@@ -20,7 +20,7 @@ class ViewManager:
         self.root.title("Arduino Communication App")
         self.text_area = TextArea(root)
         self.buttons = ButtonsFrame(root, callback_manager)
-        self.settings = Settings(root, callback_manager)
+        self.settings = Settings(root)
 
     def clear_text_area(self):
         """

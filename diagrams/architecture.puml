@@ -6,18 +6,29 @@ class "main.py" {
 
 class "ArduinoAppController" {
     - root : tkinter.Tk
+    - scheduler : Scheduler 
     - callback_manager : CallbackManager
     - view_manager : ViewManager
     - communication : ArduinoCommunication
     + __init__(root: tkinter.Tk)
     + toggle_start()
+    + read_weights()
     + clear_text()
     + calibrate()
     + update_settings()
 }
 
+class "Scheduler" {
+    + __init__()
+    + schedule(task_name, target_function, interval, delay)
+    + stop(task_name)
+    + _task_wrapper(task_name, target_function, interval, delay, stop_event)
+}
+
 class "CallbackManager" {
+    + __init__()
     + register(event: Events, callback: function)
+    + execute(event: Events)
 }
 
 class "ViewManager" {
@@ -26,27 +37,44 @@ class "ViewManager" {
     - buttons : ButtonsFrame
     - settings : Settings
     + __init__(root: tkinter.Tk, callback_manager: CallbackManager)
+    + clear_text_area()
+    + insert_text_area(txt)
+    + get_setting_val(setting_name)
+    + get_toggle_val()
+    + ask(title, text)
+    + inform(title, text)
 }
 
 class "TextArea" {
-    .. GUI component for text display ..
+    + __init__(parent)
+    + insert(text: str)
+    + clear()
 }
 
 class "ButtonsFrame" {
-    .. GUI component for buttons ..
+    + __init__(parent, callback_manager: CallbackManager)
+    + get_toggle_val()
 }
 
 class "Settings" {
-    .. GUI component for settings ..
+    + __init__(parent, callback_manager: CallbackManager)
+    + next_row()
+    + get(name)
 }
 
 class "ArduinoCommunication" {
     - connection : serial.Serial
     + __init__(port: str, baudrate: int, timeout: int)
+    + send_message(message)
+    + read_message()
+    + calibrate(scale_index, calibration_mass)
+    + get_weights()
+    + close()
 }
 
 "main.py" --> "ArduinoAppController" : starts
 
+"ArduinoAppController" --> "Scheduler" : uses
 "ArduinoAppController" --> "CallbackManager" : uses
 "ArduinoAppController" --> "ViewManager" : uses
 "ArduinoAppController" --> "ArduinoCommunication" : uses

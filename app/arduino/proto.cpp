@@ -80,6 +80,55 @@ Message WeightResponse::ToMessage()
     return msg;
 }
 
+void SetupRequest::FromMessage(const Message& msg) 
+{
+    scaleIndex_ = msg.payload_[0];
+    baud_ = msg.payload_[1] << 16 | msg.payload_[2] << 8 | msg.payload_[3];
+    dt1_ = msg.payload_[4] ;
+    sck1_ = msg.payload_[5] ;
+    dt2_ = msg.payload_[6];
+    sck2_ = msg.payload_[7];
+}
+
+Message SetupRequest::ToMessage() 
+{
+    Message msg;
+    msg.messageType_ = REQUEST;
+    msg.operationType_ = SETUP;
+    msg.payloadSize_ = 8;  // Size of the payload for SetupRequest
+
+    msg.payload_[0] = scaleIndex_;
+
+    // Put the baud bytes in the payload
+    msg.payload_[1] = (baud_ >> 16) & 0xFF;
+    msg.payload_[2] = (baud_ >> 8) & 0xFF;
+    msg.payload_[3] = baud_ & 0xFF;
+    
+    // Put the HX711 pins in the payload
+    msg.payload_[4] = dt1_;
+    msg.payload_[5] = sck1_;
+    msg.payload_[6] = dt2_;
+    msg.payload_[7] = sck2_;
+
+    return msg;
+}
+
+void SetupResponse::FromMessage(const Message& msg) 
+{
+    success_ = (msg.payload_[0] != 0);  // Explicit conversion to bool
+}
+
+Message SetupResponse::ToMessage() 
+{
+    Message msg;
+    msg.operationType_ = SETUP;
+    msg.messageType_ = RESPONSE;
+    msg.payloadSize_ = 1;  // Size of the payload for SetupResponse
+
+    msg.payload_[0] = success_;
+    return msg;
+}
+
 void ErrorResponse::FromMessage(const Message& msg) 
 {
     errorCode_ = msg.payload_[0];  // Fixed the typo here
