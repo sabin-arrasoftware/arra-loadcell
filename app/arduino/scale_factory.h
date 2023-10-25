@@ -8,7 +8,6 @@ template<class TAdapter, class TThresholdProvider>
 class ScaleFactory 
 {
 
-using DualScale = Scale<TAdapter, TThresholdProvider>;
 public:
     /**
      * @brief Constructor that initializes the ScaleFactory with a threshold provider.
@@ -23,7 +22,7 @@ public:
      * @param request The AddScaleRequest providing the necessary details to set up the scale.
      * @return Scale<TAdapter, TThresholdProvider> The created Scale object.
      */
-    DualScale CreateScale(const AddScaleRequest& request);
+    Scale<TAdapter, TThresholdProvider> CreateScale(const AddScaleRequest& request);
     
     // ... Any other factory-related methods ...
 

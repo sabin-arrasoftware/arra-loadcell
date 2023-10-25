@@ -33,6 +33,9 @@ arra::ScalesHandler<DualScale, Factory> sh(factory);
 
 void setup()
 {
+  pinMode(10, OUTPUT); // Initialize the digital pin as an output
+  digitalWrite(10, LOW);
+
   // Register command callbacks for calibration and weight retrieval
   ch.AddCallback(arra::CALIBRATE, [](const arra::Message& msg)  -> arra::Message { return sh.Calibrate(msg); });
   ch.AddCallback(arra::WEIGHT, [](const arra::Message& msg) -> arra::Message { return sh.GetWeights(msg); });

@@ -1,20 +1,13 @@
-import tkinter as tk
-import threading
-import time
+
+import logging
+
 from protocol import proto_module
 from views.view_manager import ViewManager
 from controllers.callback_manager import CallbackManager, Events
 from services.arduino_communication import ArduinoCommunication
 from controllers.scheduler import Scheduler
-import logging
 
-class SetupStructure:
-    def __init__(self, baud, dt1, sck1, dt2, sck2):
-        self.baud = baud
-        self.dt1 = dt1
-        self.sck1 = sck1
-        self.dt2 = dt2
-        self.sck2 = sck2
+
 
 class ArduinoAppController:
     """
@@ -80,8 +73,6 @@ class ArduinoAppController:
         """
         resp = self.communication.get_weights()
         dispaly_str = str(resp.floatWeight_[0])
-        print("display_str: ", dispaly_str)
-        logging.debug("display_str: ", dispaly_str)
         self.view_manager.insert_text_area(dispaly_str)
 
 
@@ -104,32 +95,29 @@ class ArduinoAppController:
             txt = "Calibration failed. Please try again."
             if response.success_:  
                 txt = "Calibration was successful!"
-    
+
             self.view_manager.inform("Calibration", txt) 
     
     def setup(self):
         """
         Start the setup process for the Arduino scales.
         """
-        txt = "Modify settings then press ok..."
+        txt = "Start Setup"
         gui_response = self.view_manager.ask("Setup", txt)
-
-        if gui_response:            
-            baud = self.view_manager.get_setting_val("Baud Rate")
-            dt1 = self.view_manager.get_setting_val("DT1")
-            sck1 = self.view_manager.get_setting_val("SCK1")
-            dt2 = self.view_manager.get_setting_val("DT2")
-            sck2 = self.view_manager.get_setting_val("SCK2")
-            setup_structure = SetupStructure(baud, dt1, sck1, dt2, sck2)
-            response = self.communication.setup(0, setup_structure)
-
-            # Save the updated settings to settings.ini
-            self.view_manager.settings.save_settings()
+    
+        if gui_response:
+            request = proto_module.AddScaleRequest()
+            request.scaleIndex_ = 0
+            request.dt1_ = int(self.view_manager.get_setting_val("DT1"))
+            request.sck1_ = int(self.view_manager.get_setting_val("SCK1"))
+            request.dt2_ = int(self.view_manager.get_setting_val("DT2"))
+            request.sck2_ = int(self.view_manager.get_setting_val("SCK2"))
+            response = self.communication.setup(request)
 
             txt = "Setup failed. Please try again."
             if response.success_:  
                 txt = "Setup was successful!"
-    
+
             self.view_manager.inform("Setup", txt)
             
     def update_settings(self):

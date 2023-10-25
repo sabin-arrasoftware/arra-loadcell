@@ -5,13 +5,15 @@
 namespace arra {
 
 // Constructor implementation
-HX711Adapter::HX711Adapter(const int dout, const int sck) {
+HX711Adapter::HX711Adapter(const int dout, const int sck) 
+{
     hx711_.begin(dout, sck);
     hx711_.tare();  // Reset the scale to 0
 }
 
 // Calibrate method implementation
-void HX711Adapter::Calibrate(const float refMass) {
+void HX711Adapter::Calibrate(const float refMass) 
+{
     static const int numReads = 10;
     float totalVal  = 0.0;
     for (int i = 0; i < numReads; ++i) {
@@ -22,7 +24,8 @@ void HX711Adapter::Calibrate(const float refMass) {
 }
 
 // GetValue method implementation
-float HX711Adapter::GetValue()  {
+float HX711Adapter::GetValue()  
+{
     return hx711_.get_units();  // Get the value in units based on calibration
 }
 

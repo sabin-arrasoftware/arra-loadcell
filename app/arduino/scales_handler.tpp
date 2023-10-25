@@ -1,31 +1,40 @@
 // scales_handler.tpp
+#include <new>
 
 namespace arra {
 
 
 // Ctor
-template <class TScale, class TThresholdProvider>
-ScalesHandler(TThresholdProvider& tp) 
-: tp_(tp)
+template <class TScale, class TFactory>
+ScalesHandler<TScale, TFactory>::ScalesHandler(TFactory& factory) 
+: factory_(factory)
+, nrScales_(0)
 {
+    for(int i = 0; i < MAX_NR_SCALES; ++i) 
+    {
+        scales_[i] = NULL;
+    }
+ 
 }
 
 // Calibrate method implementation
-template <class TScale, class TThresholdProvider>
-Message ScalesHandler<TScale, TThresholdProvider>::Calibrate(const Message& msg) 
+template <class TScale, class TFactory>
+Message ScalesHandler<TScale, TFactory>::Calibrate(const Message& msg) 
 {
     CalibrateRequest request; 
     request.FromMessage(msg);
 
-    if (!scaleExists(request.scaleIndex_)) {
+    if (!scaleExists(request.scaleIndex_)) 
+    {
         return createErrorResponse(ERR_INVALID_SCALE_INDEX);
     }
-    TScale& scaleRef = scales_[scaleIdx].scale;
-    scaleRef.Calibrate(request.calibrationMass_);
+
+    scales_[request.scaleIndex_]->Calibrate(request.calibrationMass_);
 
     CalibrateResponse response;
     response.success_ = true;
     return response.ToMessage();
+
 }
 
 // AddScale method implementation
@@ -40,7 +49,8 @@ Message ScalesHandler<TScale, TScaleFactory>::AddScale(const Message& msg)
     // this should be done internally. Please revisit this decision in the future.
     if (scaleExists(request.scaleIndex_)) 
     {
-        scales_[request.scaleIndex_].scale.~TScale();  // Explicitly call the destructor
+        delete scales_[request.scaleIndex_];
+        scales_[request.scaleIndex_] = NULL;
     } 
     else
     {
@@ -48,8 +58,7 @@ Message ScalesHandler<TScale, TScaleFactory>::AddScale(const Message& msg)
         nrScales_++;
     }
 
-    // R.Amarandei: this looks crazy and unnecessary difficult, but given the restrictions we have... we can say only shit happens.
-    new (&scales_[request.scaleIndex_].scale) TScale(factory_.CreateScale(request));
+    scales_[request.scaleIndex_] = new TScale(factory_.CreateScale(request));
 
     AddScaleResponse response;
     response.success_ = true;
@@ -81,8 +90,8 @@ float ScalesHandler<TScale, TScaleFactory>::getScaleValue(const int scaleIdx)
      if (!scaleExists(scaleIdx)) {
         return 0.0f;
     }
-    TScale& scaleRef = scales_[scaleIdx].scale;
-    return scaleRef.GetValue();
+
+    return scales_[scaleIdx]->GetValue();
 }
 
 } // namespace arra

@@ -10,7 +10,7 @@ PYBIND11_MODULE(proto_module, m) {
     py::enum_<arra::OperationType>(m, "OperationType")
         .value("CALIBRATE", arra::OperationType::CALIBRATE)
         .value("WEIGHT", arra::OperationType::WEIGHT)
-        .value("SETUP", arra::OperationType::SETUP)
+        .value("ADD_SCALE", arra::OperationType::ADD_SCALE)
         .value("ERROR", arra::OperationType::ERROR)
         .export_values();
 
@@ -72,18 +72,21 @@ PYBIND11_MODULE(proto_module, m) {
                           std::memcpy(wr.floatWeight_, arr.data(), sizeof(float) * arra::MAX_NR_SCALES);
                       });
     
-    py::class_<arra::SetupRequest>(m, "SetupRequest")
+    py::class_<arra::AddScaleRequest>(m, "AddScaleRequest")
         .def(py::init<>())
-        .def("FromMessage", &arra::SetupRequest::FromMessage)
-        .def("ToMessage", &arra::SetupRequest::ToMessage)
-        .def_readwrite("scaleIndex_", &arra::SetupRequest::scaleIndex_)
-        .def_readwrite("setupStruct_", &arra::SetupRequest::setupStruct_);
+        .def("FromMessage", &arra::AddScaleRequest::FromMessage)
+        .def("ToMessage", &arra::AddScaleRequest::ToMessage)
+        .def_readwrite("scaleIndex_", &arra::AddScaleRequest::scaleIndex_)
+        .def_readwrite("dt1_", &arra::AddScaleRequest::dt1_)
+        .def_readwrite("sck1_", &arra::AddScaleRequest::sck1_)
+        .def_readwrite("dt2_", &arra::AddScaleRequest::dt2_)
+        .def_readwrite("sck2_", &arra::AddScaleRequest::sck2_);
 
-    py::class_<arra::SetupResponse>(m, "SetupResponse")
+    py::class_<arra::AddScaleResponse>(m, "AddScaleResponse")
         .def(py::init<>())
-        .def("FromMessage", &arra::SetupResponse::FromMessage)
-        .def("ToMessage", &arra::SetupResponse::ToMessage)
-        .def_readwrite("success_", &arra::SetupResponse::success_);
+        .def("FromMessage", &arra::AddScaleResponse::FromMessage)
+        .def("ToMessage", &arra::AddScaleResponse::ToMessage)
+        .def_readwrite("success_", &arra::AddScaleResponse::success_);
 
     py::class_<arra::ErrorResponse>(m, "ErrorResponse")
         .def(py::init<>())

@@ -38,9 +38,7 @@ class ArduinoCommunication:
             payload = message.payload_
         
         print("header: ", header)
-        logging.debug("header: ", header)
         print("payload: ", payload[:message.payloadSize_])
-        logging.debug("payload: ", payload[:message.payloadSize_])
         self.connection.write(header + payload[:message.payloadSize_])
 
 
@@ -53,8 +51,7 @@ class ArduinoCommunication:
 
         while self.connection.in_waiting == 0:
         # while self.connection.in_waiting < 3:
-            print("connection_in_waiting: ", self.connection.in_waiting)
-            logging.debug("connection_in_waiting: ", str(self.connection.in_waiting))
+            print(self.connection.in_waiting)
             time.sleep(0.02)
             
         
@@ -67,9 +64,9 @@ class ArduinoCommunication:
             # time.sleep(0.01)  # Wait until there is enough data
             
         # Read the payload
+        print("header: ", str(header))
         payload = self.connection.read(payloadSize)
-        print("payload size: " + str(payloadSize))
-        logging.debug("payload size: " + str(payloadSize))
+        print("payload: ", payload[:payloadSize])
             
         # Convert payload to numpy array
         payload_array = np.frombuffer(payload, dtype=np.uint8)
@@ -92,8 +89,6 @@ class ArduinoCommunication:
         :return: A response message from the Arduino.
         """
         calibrate_request = proto_module.CalibrateRequest()
-        print("proto_module: ", proto_module)
-        logging.debug("proto_module: ", proto_module)
     
         # Set the necessary attributes
         calibrate_request.scaleIndex_ = scale_index
@@ -101,8 +96,6 @@ class ArduinoCommunication:
         
         # Serialize the request to a Message
         message = calibrate_request.ToMessage()
-        print("message: ", message)
-        logging.debug("message: ", message)
         
         # Send the message to Arduino
         self.send_message(message)
@@ -111,6 +104,7 @@ class ArduinoCommunication:
         msg = self.read_message()
         response = proto_module.CalibrateResponse()
         response.FromMessage(msg)
+        
         return response
 
     def get_weights(self):
@@ -129,7 +123,7 @@ class ArduinoCommunication:
         response.FromMessage(msg)
         return response
     
-    def setup(self, scale_index, setup_structure):
+    def setup(self, request):
         """
         Send setup data to the Arduino and receive a response.
 
@@ -139,26 +133,18 @@ class ArduinoCommunication:
 
         :return: A response message from the Arduino.
         """
-        setup_request = proto_module.SetupRequest()
-        print("proto_module: ", proto_module)
-        logging.debug("proto_module: ", proto_module)
-    
-        # Set the necessary attributes
-        setup_request.scaleIndex_ = scale_index
-        setup_request.setupStruct_ = setup_structure
         
         # Serialize the request to a Message
-        message = setup_request.ToMessage()
-        print("message: ", message)
-        logging.debug("message: ", message)
+        message = request.ToMessage()
         
         # Send the message to Arduino
         self.send_message(message)
 
         # Read the response from Arduino
         msg = self.read_message()
-        response = proto_module.SetupResponse()
+        response = proto_module.AddScaleResponse()
         response.FromMessage(msg)
+        
         return response
     
     def close(self):

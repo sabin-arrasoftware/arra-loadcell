@@ -9,14 +9,14 @@ ScaleFactory<TAdapter, TThresholdProvider>::ScaleFactory(TThresholdProvider& tp)
 }
 
 template<class TAdapter, class TThresholdProvider>
-DualScale ScaleFactory<TAdapter, TThresholdProvider>::CreateScale(const AddScaleRequest& request)
+Scale<TAdapter, TThresholdProvider> ScaleFactory<TAdapter, TThresholdProvider>::CreateScale(const AddScaleRequest& request)
 {
     // Construct your adapters based on the request data
     TAdapter firstAdapter(request.dt1_, request.sck1_);
     TAdapter secondAdapter(request.dt2_, request.sck2_);
     
     // Construct and return the Scale object
-    return DualScale(firstAdapter, secondAdapter, tp_);
+    return Scale<TAdapter, TThresholdProvider>(firstAdapter, secondAdapter, tp_);
 }
 
 } // namespace arra

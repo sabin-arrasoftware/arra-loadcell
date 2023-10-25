@@ -142,7 +142,6 @@ struct WeightResponse
 struct AddScaleRequest 
 {
     byte scaleIndex_;
-    long baud_;
     byte dt1_;
     byte sck1_;
     byte dt2_;
