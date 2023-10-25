@@ -2,9 +2,17 @@
 
 namespace arra {
 
+
+// Ctor
+template <class TScale, class TThresholdProvider>
+ScalesHandler(TThresholdProvider& tp) 
+: tp_(tp)
+{
+}
+
 // Calibrate method implementation
-template <class TScale>
-Message ScalesHandler<TScale>::Calibrate(const Message& msg) 
+template <class TScale, class TThresholdProvider>
+Message ScalesHandler<TScale, TThresholdProvider>::Calibrate(const Message& msg) 
 {
     CalibrateRequest request; 
     request.FromMessage(msg);
@@ -12,7 +20,8 @@ Message ScalesHandler<TScale>::Calibrate(const Message& msg)
     if (!scaleExists(request.scaleIndex_)) {
         return createErrorResponse(ERR_INVALID_SCALE_INDEX);
     }
-    scales_[request.scaleIndex_]->Calibrate(request.calibrationMass_);
+    TScale& scaleRef = scales_[scaleIdx].scale;
+    scaleRef.Calibrate(request.calibrationMass_);
 
     CalibrateResponse response;
     response.success_ = true;
@@ -20,15 +29,35 @@ Message ScalesHandler<TScale>::Calibrate(const Message& msg)
 }
 
 // AddScale method implementation
-template <class TScale>
-void ScalesHandler<TScale>::AddScale(const TScale& scale) 
+template <class TScale, class TScaleFactory>
+Message ScalesHandler<TScale, TScaleFactory>::AddScale(const Message& msg) 
 {
-    scales_[nrScales_] = &scale; 
-    nrScales_++;                
+    AddScaleRequest request; 
+    request.FromMessage(msg);
+
+    // This part is wrong and must be rethinked.
+    // At current stage we are working with only one scale, and we get the index value from outside world
+    // this should be done internally. Please revisit this decision in the future.
+    if (scaleExists(request.scaleIndex_)) 
+    {
+        scales_[request.scaleIndex_].scale.~TScale();  // Explicitly call the destructor
+    } 
+    else
+    {
+        // just increment the number of scales
+        nrScales_++;
+    }
+
+    // R.Amarandei: this looks crazy and unnecessary difficult, but given the restrictions we have... we can say only shit happens.
+    new (&scales_[request.scaleIndex_].scale) TScale(factory_.CreateScale(request));
+
+    AddScaleResponse response;
+    response.success_ = true;
+    return response.ToMessage();     
 }   
 
-template <class TScale>
-Message ScalesHandler<TScale>::GetWeights(const Message& ) {
+template <class TScale, class TScaleFactory>
+Message ScalesHandler<TScale, TScaleFactory>::GetWeights(const Message& ) {
     // populate weightMessage
     WeightResponse response;
     response.numberOfScales_ = nrScales_;
@@ -40,19 +69,20 @@ Message ScalesHandler<TScale>::GetWeights(const Message& ) {
 
 // Private
 
-template <class TScale>
-bool ScalesHandler<TScale>::scaleExists(const int scaleIdx) 
+template <class TScale, class TScaleFactory>
+bool ScalesHandler<TScale, TScaleFactory>::scaleExists(const int scaleIdx) 
 {
     return scaleIdx >= 0 && scaleIdx < nrScales_;
 }
 
-template <class TScale>
-float ScalesHandler<TScale>::getScaleValue(const int scaleIdx) 
+template <class TScale, class TScaleFactory>
+float ScalesHandler<TScale, TScaleFactory>::getScaleValue(const int scaleIdx) 
 {
      if (!scaleExists(scaleIdx)) {
         return 0.0f;
     }
-    return scales_[scaleIdx]->GetValue();
+    TScale& scaleRef = scales_[scaleIdx].scale;
+    return scaleRef.GetValue();
 }
 
 } // namespace arra

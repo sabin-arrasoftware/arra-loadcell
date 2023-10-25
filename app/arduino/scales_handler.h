@@ -16,15 +16,23 @@ namespace arra {
  * 
  * @tparam TScale The type of scale. Must have `GetWeight` and `GetValue` methods.
  */
-template <class TScale>
+template <class TScale, class TScaleFactory>
 class ScalesHandler 
 {
+    // Avoid TScale constructor
+    union ScaleUnion {
+        uint8_t raw[sizeof(TScale)]; // uninitialized memory placeholder
+        TScale scale;
+
+        ScaleUnion() = default; // Default constructor does nothing
+        ~ScaleUnion() = default;  // Destructor does nothing to prevent automatic destruction
+    }
 
 public:
     /**
      * @brief Construct a new ScalesHandler object.
      */
-    ScalesHandler() = default;
+    ScalesHandler(TScaleFactory& factory);
 
     /**
      * @brief Calibrate a scale based on a given message.
@@ -40,7 +48,7 @@ public:
      * 
      * @param scale The scale to be added.
      */
-    void AddScale(const TScale& scale);
+    void AddScale(const Message& msg);
 
     /**
      * @brief Construct a weight message based on the values from all scales.
@@ -56,7 +64,8 @@ private:
     float getScaleValue(const int scale_idx);  // Corrected the return type from 'flat' to 'float'
 
 private:
-    TScale *scales_[MAX_NR_SCALES];
+    ScaleUnion scales_[MAX_NR_SCALES];
+    TScaleFactory& factory_;
     int nrScales_;
 };
 

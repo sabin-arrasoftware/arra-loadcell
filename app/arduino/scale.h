@@ -18,7 +18,7 @@ namespace arra {
  * @tparam TThresholdProvider The type of threshold provider. Must have `get_threshold` method.
  */
 template<class TAdapter, class TThresholdProvider>
-class Scale 
+class DualScale 
 {
 
 public:

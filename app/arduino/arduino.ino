@@ -6,6 +6,12 @@
 #include "scale.h"
 #include "proto.h"
 #include "threshold_provider.h"
+#include "scale_factory.h"
+
+// Rename some things for clarity
+using DualScale = arra::Scale<arra::HX711Adapter, arra::ThresholdProvider>;
+using Factory = arra::ScaleFactory<arra::HX711Adapter, arra::ThresholdProvider>;
+
 
 // Define the serial object for communication
 HardwareSerial& serial = Serial;
@@ -21,19 +27,16 @@ arra::Point points[arra::NUMBER_OF_POINTS] = {
 // Create instances of the necessary classes
 arra::CommandHandler ch;
 arra::Serial<arra::CommandHandler> rw(serial, ch);
-arra::ScalesHandler<arra::Scale<arra::HX711Adapter, arra::ThresholdProvider>> sh;
 arra::ThresholdProvider tp(points);
-arra::HX711Adapter firstAdapter(14, 15), secondAdapter(18, 19);
-arra::Scale<arra::HX711Adapter, arra::ThresholdProvider> scale(firstAdapter, secondAdapter, tp);
+Factory factory(tp);
+arra::ScalesHandler<DualScale, Factory> sh(factory);
 
 void setup()
 {
-  // Add the scale to the scales handler
-  sh.AddScale(scale);
-
   // Register command callbacks for calibration and weight retrieval
   ch.AddCallback(arra::CALIBRATE, [](const arra::Message& msg)  -> arra::Message { return sh.Calibrate(msg); });
   ch.AddCallback(arra::WEIGHT, [](const arra::Message& msg) -> arra::Message { return sh.GetWeights(msg); });
+  ch.AddCallback(arra::ADD_SCALE, [](const arra::Message& msg)  -> arra::Message { return sh.AddScale(msg); });
 
   // Start serial communication
   rw.Start();

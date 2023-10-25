@@ -27,19 +27,6 @@ const byte PAYLOAD_SIZE = 16;
 const byte MAX_NR_SCALES = 4;
 
 /**
- * @struct SetupStruct
- * @brief The structure for the setup config
- */
-struct SetupStruct 
-{
-    long baud_;
-    byte dt1_;
-    byte sck1_;
-    byte dt2_;
-    byte sck2_;
-};
-
-/**
  * @enum OperationType
  * @brief Enumerates the types of operations supported by the protocol.
  */
@@ -47,7 +34,7 @@ enum OperationType
 {
     CALIBRATE = 0, /**< Calibration operation. */
     WEIGHT,        /**< Weight measurement operation. */
-    SETUP,         /**< Arduino setup operation. */
+    ADD_SCALE,     /**< Arduino add_scale operation. */
     ERROR          /**< Also Sentinel value. Used to determine the number of operations. */
 };
 
@@ -152,10 +139,14 @@ struct WeightResponse
  * @struct SetupRequest
  * @brief Represents an Arduino setup request message.
  */
-struct SetupRequest 
+struct AddScaleRequest 
 {
     byte scaleIndex_;
-    SetupStruct setupStruct_;
+    long baud_;
+    byte dt1_;
+    byte sck1_;
+    byte dt2_;
+    byte sck2_;
 
     void FromMessage(const Message& msg);
     Message ToMessage();
@@ -165,7 +156,7 @@ struct SetupRequest
  * @struct SetupResponse
  * @brief Represents an Arduino setup response message.
  */
-struct SetupResponse 
+struct AddScaleResponse 
 {
     bool success_;              /**< Indicates if the setup was successful. */
 
