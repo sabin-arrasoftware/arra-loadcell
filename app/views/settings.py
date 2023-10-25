@@ -2,6 +2,17 @@ import tkinter as tk
 from tkinter import ttk
 from controllers.callback_manager import CallbackManager
 from controllers.callback_manager import Events
+import configparser
+import os
+
+# Get the directory of the current script (settings.py)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Navigate to the parent directory (app)
+app_dir = os.path.dirname(current_dir)
+
+# Define the path to the settings.ini file
+config_file_path = os.path.join(app_dir, "config", "settings.ini")
 
 class Entry:
     """
@@ -42,6 +53,8 @@ class Settings:
         :param parent: The parent widget.
         """
         self.row = -1
+        self.config = configparser.ConfigParser()
+        self.config.read(config_file_path)  # Load settings from the configuration file
 
         # Dictionary to store settings
         self.settings = {}
@@ -99,30 +112,42 @@ class Settings:
         :return: The value of the setting.
         """
         return self.settings[name].get()
-    
-    def get_general_settings(self):
-        """
-        Define initial values for General settings
 
-        :return: A dictionary with general settings.
-        """
+    def get_general_settings(self):
+        # Get general settings from the configuration file or use defaults if not found
+        calibration_mass = self.config.get("GeneralSettings", "CalibrationMass", fallback="6.1")
+        update_interval = self.config.get("GeneralSettings", "UpdateInterval", fallback="1")
         return {
-            "Calibration Mass": "6.1", 
-            "Update Interval": "1"
+            "Calibration Mass": calibration_mass,
+            "Update Interval": update_interval
         }
 
     def get_arduino_settings(self):
-        """
-        Define initial values for Arduino settings
-
-        :return: A dictionary with Arduino settings.
-        """
+        # Get Arduino settings from the configuration file or use defaults if not found
+        connection_port = self.config.get("ArduinoSettings", "ConnectionPort", fallback="/dev/ttyUSB0")
+        baud_rate = self.config.get("ArduinoSettings", "BaudRate", fallback="9600")
+        dt1 = self.config.get("ArduinoSettings", "DT1", fallback="14")
+        sck1 = self.config.get("ArduinoSettings", "SCK1", fallback="15")
+        dt2 = self.config.get("ArduinoSettings", "DT2", fallback="18")
+        sck2 = self.config.get("ArduinoSettings", "SCK2", fallback="19")
         return {
-            "Connection Port": "/dev/ttyUSB0",
-            "Baud Rate": "9600",
-            "DT1": "14",
-            "SCK1": "15",
-            "DT2": "18",
-            "SCK2": "19"
+            "Connection Port": connection_port,
+            "Baud Rate": baud_rate,
+            "DT1": dt1,
+            "SCK1": sck1,
+            "DT2": dt2,
+            "SCK2": sck2
         }
+
+    def save_settings(self):
+        """
+        Save the current settings to settings.ini.
+        """
+        for section_name, section in self.config.items():
+            for key, value in section.items():
+                self.config[section_name][key] = self.get(key)
+
+        # Write the updated settings to the config file
+        with open(config_file_path, 'w') as configfile:
+            self.config.write(configfile)
 

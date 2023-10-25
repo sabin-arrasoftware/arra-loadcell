@@ -83,11 +83,11 @@ Message WeightResponse::ToMessage()
 void SetupRequest::FromMessage(const Message& msg) 
 {
     scaleIndex_ = msg.payload_[0];
-    baud_ = msg.payload_[1] << 16 | msg.payload_[2] << 8 | msg.payload_[3];
-    dt1_ = msg.payload_[4] ;
-    sck1_ = msg.payload_[5] ;
-    dt2_ = msg.payload_[6];
-    sck2_ = msg.payload_[7];
+    setupStruct_.baud_ = msg.payload_[1] << 16 | msg.payload_[2] << 8 | msg.payload_[3];
+    setupStruct_.dt1_ = msg.payload_[4] ;
+    setupStruct_.sck1_ = msg.payload_[5] ;
+    setupStruct_.dt2_ = msg.payload_[6];
+    setupStruct_.sck2_ = msg.payload_[7];
 }
 
 Message SetupRequest::ToMessage() 
@@ -100,15 +100,15 @@ Message SetupRequest::ToMessage()
     msg.payload_[0] = scaleIndex_;
 
     // Put the baud bytes in the payload
-    msg.payload_[1] = (baud_ >> 16) & 0xFF;
-    msg.payload_[2] = (baud_ >> 8) & 0xFF;
-    msg.payload_[3] = baud_ & 0xFF;
+    msg.payload_[1] = (setupStruct_.baud_ >> 16) & 0xFF;
+    msg.payload_[2] = (setupStruct_.baud_ >> 8) & 0xFF;
+    msg.payload_[3] = setupStruct_.baud_ & 0xFF;
     
     // Put the HX711 pins in the payload
-    msg.payload_[4] = dt1_;
-    msg.payload_[5] = sck1_;
-    msg.payload_[6] = dt2_;
-    msg.payload_[7] = sck2_;
+    msg.payload_[4] = setupStruct_.dt1_;
+    msg.payload_[5] = setupStruct_.sck1_;
+    msg.payload_[6] = setupStruct_.dt2_;
+    msg.payload_[7] = setupStruct_.sck2_;
 
     return msg;
 }

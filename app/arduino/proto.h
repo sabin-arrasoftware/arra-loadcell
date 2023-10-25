@@ -27,6 +27,19 @@ const byte PAYLOAD_SIZE = 16;
 const byte MAX_NR_SCALES = 4;
 
 /**
+ * @struct SetupStruct
+ * @brief The structure for the setup config
+ */
+struct SetupStruct 
+{
+    long baud_;
+    byte dt1_;
+    byte sck1_;
+    byte dt2_;
+    byte sck2_;
+};
+
+/**
  * @enum OperationType
  * @brief Enumerates the types of operations supported by the protocol.
  */
@@ -142,11 +155,7 @@ struct WeightResponse
 struct SetupRequest 
 {
     byte scaleIndex_;
-    long baud_;
-    byte dt1_;
-    byte sck1_;
-    byte dt2_;
-    byte sck2_;
+    SetupStruct setupStruct_;
 
     void FromMessage(const Message& msg);
     Message ToMessage();

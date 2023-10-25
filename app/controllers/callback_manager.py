@@ -7,6 +7,7 @@ class Events(Enum):
     TOGGLE_START = "toggle_start"
     CLEAR_TEXT = "clear_text"
     CALIBRATE = "calibrate"
+    SETUP = "setup"
     UPDATE_SETTINGS = "update_settings"
     UPLOAD_SKETCH = "upload_sketch"
 

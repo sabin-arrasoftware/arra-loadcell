@@ -21,7 +21,7 @@ x_values = [1, 1000, 10000]
 y_values = [0.2, 1, 5]
 
 # Test the Lagrange interpolation polynomial for various x values
-test_x_values = [1, 6, 10, 50, 100, 500, 1000, 5000, 10000]
+test_x_values = [1, 3, 3.1, 6, 10, 50, 100, 500, 1000, 5000, 10000]
 test_interpolation(x_values, y_values, test_x_values)
 
 # Good set

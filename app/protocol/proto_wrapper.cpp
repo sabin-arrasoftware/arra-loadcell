@@ -10,6 +10,7 @@ PYBIND11_MODULE(proto_module, m) {
     py::enum_<arra::OperationType>(m, "OperationType")
         .value("CALIBRATE", arra::OperationType::CALIBRATE)
         .value("WEIGHT", arra::OperationType::WEIGHT)
+        .value("SETUP", arra::OperationType::SETUP)
         .value("ERROR", arra::OperationType::ERROR)
         .export_values();
 
@@ -70,6 +71,19 @@ PYBIND11_MODULE(proto_module, m) {
                       [](arra::WeightResponse& wr, const py::array_t<float>& arr) {
                           std::memcpy(wr.floatWeight_, arr.data(), sizeof(float) * arra::MAX_NR_SCALES);
                       });
+    
+    py::class_<arra::SetupRequest>(m, "SetupRequest")
+        .def(py::init<>())
+        .def("FromMessage", &arra::SetupRequest::FromMessage)
+        .def("ToMessage", &arra::SetupRequest::ToMessage)
+        .def_readwrite("scaleIndex_", &arra::SetupRequest::scaleIndex_)
+        .def_readwrite("setupStruct_", &arra::SetupRequest::setupStruct_);
+
+    py::class_<arra::SetupResponse>(m, "SetupResponse")
+        .def(py::init<>())
+        .def("FromMessage", &arra::SetupResponse::FromMessage)
+        .def("ToMessage", &arra::SetupResponse::ToMessage)
+        .def_readwrite("success_", &arra::SetupResponse::success_);
 
     py::class_<arra::ErrorResponse>(m, "ErrorResponse")
         .def(py::init<>())

@@ -78,6 +78,8 @@ class ButtonsFrame:
             lambda: callback_manager.execute(Events.CLEAR_TEXT))
         self.calibrate = Button(self.frame, "Calibrate",
             lambda: callback_manager.execute(Events.CALIBRATE))
+        self.setup = Button(self.frame, "Setup",
+            lambda: callback_manager.execute(Events.SETUP))
         # self.upload_sketch = Button(self.frame, "Upload sketch", 
         #     lambda: callback_manager.execute(Events.UPLOAD_SKETCH))
 
