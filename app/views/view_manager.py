@@ -9,7 +9,7 @@ class ViewManager:
     Provides methods to interact with the text area, buttons, and settings components.
     """
     
-    def __init__(self, root, callback_manager):
+    def __init__(self, root, callback_manager, config_path):
         """
         Initialize the ViewManager with the main GUI components.
 
@@ -20,7 +20,7 @@ class ViewManager:
         self.root.title("Arduino Communication App")
         self.text_area = TextArea(root)
         self.buttons = ButtonsFrame(root, callback_manager)
-        self.settings = Settings(root)
+        self.settings = Settings(root, config_path)
 
     def clear_text_area(self):
         """
@@ -71,3 +71,6 @@ class ViewManager:
         :param text: The text content of the dialog.
         """
         messagebox.showinfo(title, text)
+
+    def update_settings(self):
+        self.settings.update()

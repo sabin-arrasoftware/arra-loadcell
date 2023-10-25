@@ -8,8 +8,6 @@ class Events(Enum):
     CLEAR_TEXT = "clear_text"
     CALIBRATE = "calibrate"
     SETUP = "setup"
-    UPDATE_SETTINGS = "update_settings"
-    UPLOAD_SKETCH = "upload_sketch"
 
 class CallbackManager:
     """

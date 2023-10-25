@@ -1,18 +1,7 @@
+import configparser
 import tkinter as tk
 from tkinter import ttk
-from controllers.callback_manager import CallbackManager
-from controllers.callback_manager import Events
-import configparser
-import os
-
-# Get the directory of the current script (settings.py)
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Navigate to the parent directory (app)
-app_dir = os.path.dirname(current_dir)
-
-# Define the path to the settings.ini file
-config_file_path = os.path.join(app_dir, "config", "settings.ini")
+from math import ceil, sqrt
 
 class Entry:
     """
@@ -42,67 +31,30 @@ class Entry:
         """
         return self.entry.get()
 
-class Settings:
-    """
-    Represents a frame containing multiple setting entries.
-    """
-    def __init__(self, parent):
+class Tab:
+    def __init__(self, tab_name, parent, settings):
         """
         Initialize the Settings frame.
 
         :param parent: The parent widget.
         """
-        self.row = -1
-        self.config = configparser.ConfigParser()
-        self.config.read(config_file_path)  # Load settings from the configuration file
+        self.tab_name = tab_name
+        self.tab = ttk.Frame(parent)
+        parent.add(self.tab, text=self.tab_name)
+        self.entries = {}
+          
+        # Calculate grid dimensions
+        total = len(settings)
+        rows = ceil(sqrt(total))
+        cols = ceil(total / rows)
 
-        # Dictionary to store settings
-        self.settings = {}
-
-        # Create a frame for settings
-        frame = ttk.LabelFrame(parent, text="Settings", padding=(10, 5))
-        frame.pack(pady=20, padx=20, fill="both", expand=True)
-
-        # Create a notebook for tabs
-        notebook = ttk.Notebook(frame)
-        notebook.grid(row=0, column=0, columnspan=3, pady=5, padx=5, sticky="nsew")
-
-        # Create tabs for General settings and Arduino settings
-        self.create_tab(notebook, "General Settings", self.get_general_settings())
-        self.create_tab(notebook, "Arduino Settings", self.get_arduino_settings())
-
-    def create_tab(self, notebook, tab_name, initial_settings):
-        """
-        Create a tab for settings in the notebook.
-
-        :param notebook: The notebook which contains the tab.
-        :param tab_name: The name of the tab.
-        :param initial_settings: The dictionary with the initial settings values.
-        """
-
-        tab = ttk.Frame(notebook)
-        notebook.add(tab, text=tab_name)
-
-        # These settings are grouped in columns with 2 rows each
-        col = 0
-        settings_index = 0
-
-        for name, default_value in initial_settings.items():
+        counter = 0
+        for name, default in settings.items():
             # Determine the row and column for the setting            
-            row = self.next_row() % 2
-            # Create an Entry object for the setting
-            self.settings[name] = Entry(tab, name, row, col, default_value)
-            settings_index += 1
-            col = settings_index // 2 * 2
-
-    def next_row(self):
-        """
-        Get the next available row number for placing a widget.
-
-        :return: The next available row number.
-        """
-        self.row += 1
-        return self.row
+            row = counter // cols
+            col = 2*(counter % cols)
+            self.entries[name] = Entry(self.tab, name, row, col, default)
+            counter += 1
 
     def get(self, name):
         """
@@ -111,43 +63,67 @@ class Settings:
         :param name: The name of the setting.
         :return: The value of the setting.
         """
-        return self.settings[name].get()
-
-    def get_general_settings(self):
-        # Get general settings from the configuration file or use defaults if not found
-        calibration_mass = self.config.get("GeneralSettings", "CalibrationMass", fallback="6.1")
-        update_interval = self.config.get("GeneralSettings", "UpdateInterval", fallback="1")
-        return {
-            "Calibration Mass": calibration_mass,
-            "Update Interval": update_interval
-        }
-
-    def get_arduino_settings(self):
-        # Get Arduino settings from the configuration file or use defaults if not found
-        connection_port = self.config.get("ArduinoSettings", "ConnectionPort", fallback="/dev/ttyUSB0")
-        baud_rate = self.config.get("ArduinoSettings", "BaudRate", fallback="9600")
-        dt1 = self.config.get("ArduinoSettings", "DT1", fallback="14")
-        sck1 = self.config.get("ArduinoSettings", "SCK1", fallback="15")
-        dt2 = self.config.get("ArduinoSettings", "DT2", fallback="18")
-        sck2 = self.config.get("ArduinoSettings", "SCK2", fallback="19")
-        return {
-            "Connection Port": connection_port,
-            "Baud Rate": baud_rate,
-            "DT1": dt1,
-            "SCK1": sck1,
-            "DT2": dt2,
-            "SCK2": sck2
-        }
-
-    def save_settings(self):
+        return self.entries[name].get()
+        
+class Settings:
+    """
+    Represents a frame containing multiple setting entries.
+    """
+    def __init__(self, parent, config_path):
         """
-        Save the current settings to settings.ini.
+        Initialize the Settings frame.
+
+        :param parent: The parent widget.
         """
-        for section_name, section in self.config.items():
-            for key, value in section.items():
-                self.config[section_name][key] = self.get(key)
+        self.config_path = config_path
+        
+        # Dictionary to store settings
+        self.settings = {}
+        self.tabs = {}
+        
+        self.draw(parent)
 
-        # Write the updated settings to the config file
-        with open(config_file_path, 'w') as configfile:
-            self.config.write(configfile)
+    def draw(self, parent):
+        """Renders the settings UI frame and populates it with tabs based on the config file."""
+        # Create a frame for settings
+        frame = ttk.LabelFrame(parent, text="Settings", padding=(10, 5))
+        frame.pack(pady=20, padx=20, fill="both", expand=True)
 
+        # Create a notebook for tabs
+        notebook = ttk.Notebook(frame)
+        notebook.grid(row=0, column=0, columnspan=3, pady=5, padx=5, sticky="nsew")
+
+        # Create tabs based on config file
+        config = configparser.ConfigParser()
+        config.read(self.config_path)
+
+        for section in config.sections():
+            self.tabs[section] = Tab(section, notebook, config[section])
+            for name in config[section].keys():
+                self.settings[name] = section
+
+    def get(self, name):
+        """
+        Get the current value of a specific setting.
+
+        :param name: The name of the setting.
+        :return: The value of the setting.
+        """
+        tab_name = self.settings[name]
+        return self.tabs[tab_name].get(name)
+
+    def update(self):
+        """Update the configuration file with the current settings."""
+        config = configparser.ConfigParser()
+        for name in self.settings:
+            section = self.settings[name]
+            value = self.tabs[section].get(name)
+            
+            # Ensure the section exists.
+            if section not in config:
+                config[section] = {}
+                
+            config[section][name] = value
+        
+        with open(self.config_path, 'w') as configfile:
+            config.write(configfile)

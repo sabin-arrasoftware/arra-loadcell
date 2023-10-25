@@ -13,7 +13,10 @@ sudo apt-get install -y python3-tk
 sudo apt-get install pybind11-dev
 
 # Install pybind11
-sudo pip install pybind11
+pip install pybind11
+
+# Install numpy
+pip install numpy
 
 # Install any other dependencies you might need
 # sudo apt-get install -y <other-packages>
