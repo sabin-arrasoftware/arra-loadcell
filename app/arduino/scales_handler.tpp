@@ -29,7 +29,8 @@ Message ScalesHandler<TScale, TFactory>::Calibrate(const Message& msg)
         return createErrorResponse(ERR_INVALID_SCALE_INDEX);
     }
 
-    scales_[request.scaleIndex_]->Calibrate(request.calibrationMass_);
+    TScale& scaleRef = scales_[scaleIdx].scale;
+    scaleRef.Calibrate(request.calibrationMass_);
 
     CalibrateResponse response;
     response.success_ = true;
@@ -44,13 +45,9 @@ Message ScalesHandler<TScale, TScaleFactory>::AddScale(const Message& msg)
     AddScaleRequest request; 
     request.FromMessage(msg);
 
-    // This part is wrong and must be rethinked.
-    // At current stage we are working with only one scale, and we get the index value from outside world
-    // this should be done internally. Please revisit this decision in the future.
     if (scaleExists(request.scaleIndex_)) 
     {
-        delete scales_[request.scaleIndex_];
-        scales_[request.scaleIndex_] = NULL;
+        scales_[request.scaleIndex_].scale.~TScale();  // Explicitly call the destructor
     } 
     else
     {
@@ -58,7 +55,8 @@ Message ScalesHandler<TScale, TScaleFactory>::AddScale(const Message& msg)
         nrScales_++;
     }
 
-    scales_[request.scaleIndex_] = new TScale(factory_.CreateScale(request));
+    // R.Amarandei: this looks crazy and unnecessary difficult, but given the restrictions we have... we can say only shit happens.
+    new (&scales_[request.scaleIndex_].scale) TScale(factory_.CreateScale(request));
 
     AddScaleResponse response;
     response.success_ = true;
@@ -91,7 +89,8 @@ float ScalesHandler<TScale, TScaleFactory>::getScaleValue(const int scaleIdx)
         return 0.0f;
     }
 
-    return scales_[scaleIdx]->GetValue();
+    TScale& scaleRef = scales_[scaleIdx].scale;
+    return scaleRef.GetValue();
 }
 
 } // namespace arra

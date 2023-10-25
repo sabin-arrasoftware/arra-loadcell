@@ -5,7 +5,7 @@
 namespace arra {
 
 // Free Functions.
-bool isWithinThreshold(const float in, const float ref, const float threshold) 
+static bool isWithinThreshold(const float in, const float ref, const float threshold) 
 {
     float refNonNull = (ref < 0.01) ? 0.01 : ref;
     float change = ((in - ref) / refNonNull) * 100.0;
@@ -14,7 +14,7 @@ bool isWithinThreshold(const float in, const float ref, const float threshold)
 
 // Constructor
 template<class TAdapter, class TThresholdProvider>
-Scale<TAdapter, TThresholdProvider>::Scale(TAdapter& first, TAdapter& second, TThresholdProvider& tp)
+Scale<TAdapter, TThresholdProvider>::Scale(const TAdapter& first, const TAdapter& second, TThresholdProvider& tp)
 : first_(first)
 , second_(second)
 , tp_(tp) 

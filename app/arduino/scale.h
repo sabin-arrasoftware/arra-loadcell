@@ -29,7 +29,7 @@ public:
      * @param second The second adapter object.
      * @param tp The threshold provider object.
      */
-    Scale(TAdapter& first, TAdapter& second, TThresholdProvider& tp);
+    Scale(const TAdapter& first, const TAdapter& second, TThresholdProvider& tp);
 
     /**
      * @brief Calibrate both adapter objects.
@@ -55,8 +55,8 @@ public:
    
 
 private:
-    TAdapter& first_;
-    TAdapter& second_;
+    TAdapter first_;
+    TAdapter second_;
     TThresholdProvider& tp_;
     
     float measured_;
