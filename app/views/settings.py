@@ -48,14 +48,16 @@ class Tab:
         rows = ceil(sqrt(total))
         cols = ceil(total / rows)
 
-        counter = 0
+        counter = -1
         for name, default in settings.items():
+            counter += 1
             # Determine the row and column for the setting            
             row = counter // cols
-            col = 2*(counter % cols)
+            # "2*" because we have 1 label + 1 text_entry for each Entry 
+            col = 2*(counter % cols) 
+            # Create entry
             self.entries[name] = Entry(self.tab, name, row, col, default)
-            counter += 1
-
+            
     def get(self, name):
         """
         Get the current value of a specific setting.
