@@ -29,18 +29,20 @@ class ArduinoAppController:
         # Initialize CallbackManager
         self.callback_manager = CallbackManager()
 
-        # Register events
-        self.callback_manager.register(Events.TOGGLE_START, self.toggle_start)
-        self.callback_manager.register(Events.CLEAR_TEXT, self.clear_text)
-        self.callback_manager.register(Events.CALIBRATE, self.calibrate)
-        self.callback_manager.register(Events.SETUP, self.setup)        
-        self.callback_manager.register(Events.UPDATE_SETTINGS, self.update_settings)
-
         # Initialize the ViewManager
         self.view_manager = ViewManager(self.root, self.callback_manager)
 
         # Initialize Communication
         self.communication = self.initializeArduinoCommunication()
+
+        # Register events
+        self.callback_manager.register(Events.TOGGLE_START, self.toggle_start)
+        self.callback_manager.register(Events.CLEAR_TEXT, self.view_manager.clear_text_area)
+        self.callback_manager.register(Events.CALIBRATE, self.calibrate)
+        self.callback_manager.register(Events.SETUP, self.setup)        
+        self.callback_manager.register(Events.UPDATE_SETTINGS, self.update_settings)
+
+
 
     def initializeArduinoCommunication(self):
         """
@@ -108,7 +110,7 @@ class ArduinoAppController:
         if gui_response:
             request = proto_module.AddScaleRequest()
             request.scaleIndex_ = 0
-            request.dt1_ = int(self.view_manager.get_setting_val("DT1"))
+            request.dt1_ = (self.view_manager.get_setting_val("DT1"))
             request.sck1_ = int(self.view_manager.get_setting_val("SCK1"))
             request.dt2_ = int(self.view_manager.get_setting_val("DT2"))
             request.sck2_ = int(self.view_manager.get_setting_val("SCK2"))

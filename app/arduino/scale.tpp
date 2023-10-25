@@ -55,6 +55,7 @@ float Scale<TAdapter, TThresholdProvider>::GetValue()
     else // value isn't considered as drifting
     {
         measured_ = average;
+        driftReference_ = measured_;
     }
 
     return measured_;

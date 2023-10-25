@@ -10,11 +10,6 @@ ScalesHandler<TScale, TFactory>::ScalesHandler(TFactory& factory)
 : factory_(factory)
 , nrScales_(0)
 {
-    for(int i = 0; i < MAX_NR_SCALES; ++i) 
-    {
-        scales_[i] = NULL;
-    }
- 
 }
 
 // Calibrate method implementation
@@ -29,7 +24,7 @@ Message ScalesHandler<TScale, TFactory>::Calibrate(const Message& msg)
         return createErrorResponse(ERR_INVALID_SCALE_INDEX);
     }
 
-    TScale& scaleRef = scales_[scaleIdx].scale;
+    TScale& scaleRef = scales_[request.scaleIndex_].scale;
     scaleRef.Calibrate(request.calibrationMass_);
 
     CalibrateResponse response;

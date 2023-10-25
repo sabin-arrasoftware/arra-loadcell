@@ -26,7 +26,7 @@ class ScalesHandler
 
         ScaleUnion(){} // Default constructor does nothing
         ~ScaleUnion(){} // Destructor does nothing to prevent automatic destruction
-    }
+    };
 
 public:
     /**
@@ -48,7 +48,7 @@ public:
      * 
      * @param scale The scale to be added.
      */
-    void AddScale(const Message& msg);
+    Message AddScale(const Message& msg);
 
     /**
      * @brief Construct a weight message based on the values from all scales.
