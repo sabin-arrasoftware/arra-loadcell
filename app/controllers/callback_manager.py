@@ -9,6 +9,7 @@ class Events(Enum):
     CALIBRATE = "calibrate"
     SETUP = "setup"
 
+
 class CallbackManager:
     """
     Manages the registration and execution of callbacks based on specific events.

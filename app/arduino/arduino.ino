@@ -8,6 +8,7 @@
 #include "threshold_provider.h"
 #include "scale_factory.h"
 
+
 // Rename some things for clarity
 using DualScale = arra::Scale<arra::HX711Adapter, arra::ThresholdProvider>;
 using Factory = arra::ScaleFactory<arra::HX711Adapter, arra::ThresholdProvider>;
@@ -15,6 +16,7 @@ using Factory = arra::ScaleFactory<arra::HX711Adapter, arra::ThresholdProvider>;
 
 // Define the serial object for communication
 HardwareSerial& serial = Serial;
+
 
 // Define the points for interpolation
 arra::Point points[arra::NUMBER_OF_POINTS] = {

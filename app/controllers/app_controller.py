@@ -35,11 +35,8 @@ class ArduinoAppController:
         # Initialize Communication
         self.communication = self.initializeArduinoCommunication()
 
-        # Register events
-        self.callback_manager.register(Events.TOGGLE_START, self.toggle_start)
-        self.callback_manager.register(Events.CLEAR_TEXT, self.clear_text)
-        self.callback_manager.register(Events.CALIBRATE, self.calibrate)
-        self.callback_manager.register(Events.SETUP, self.setup)        
+        # Register Events
+        self.register_events()   
 
     def initializeArduinoCommunication(self):
         """
@@ -50,6 +47,12 @@ class ArduinoAppController:
         port = self.view_manager.get_setting_val("connection_port")
         baudrate = int(self.view_manager.get_setting_val("baud_rate"))
         return ArduinoCommunication(port, baudrate)
+    
+    def register_events(self):
+        self.callback_manager.register(Events.TOGGLE_START, self.toggle_start)
+        self.callback_manager.register(Events.CLEAR_TEXT, self.clear_text)
+        self.callback_manager.register(Events.CALIBRATE, self.calibrate)
+        self.callback_manager.register(Events.SETUP, self.setup)
 
     def toggle_start(self):
         """
